@@ -7,7 +7,7 @@ function App() {
   
   return (
     <>
-      <h1>Hostel Room allocation system</h1>
+      <h1>Hostel Room allocation s</h1>
     </>
   )
 }
