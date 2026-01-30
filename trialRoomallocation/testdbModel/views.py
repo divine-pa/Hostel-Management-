@@ -27,5 +27,5 @@ def get_hall(request):
 @api_view(['GET'])
 def get_payment(request):
     payment = Payment.objects.all()
-    serializers = PaymentSerializer(Payment, many=True)
-    return Response(serializers.data)
+    serializers = PaymentSerializer(payment, many=True)
+    return Response(serializers.data) 

@@ -6,4 +6,4 @@ urlpatterns = [
     path('admin/', get_admin),
     path('hall/', get_hall),
     path('payment/', get_payment),
-] 
+]  
