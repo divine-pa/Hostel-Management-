@@ -7,7 +7,7 @@ class HallSerializer(serializers.ModelSerializer):
         fields = "__all__" 
 
 #student
-class StudentSerializer(serializers.ModelSerializer):
+class StudentSerializer(serializers.ModelSerializer): 
 
     class Meta:
         model = Student
@@ -22,7 +22,7 @@ class AdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
         fields = "__all__"
-        extr_kwargs = {
+        extra_kwargs = {
             'password':{'write_only': True}
         }
 
@@ -31,3 +31,12 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = '__all__'
+
+class LoginSerializer(serializers.Serializer):
+    matriculation_number = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+class AdminLoginSerializer(serializers.Serializer):
+    email = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+    
