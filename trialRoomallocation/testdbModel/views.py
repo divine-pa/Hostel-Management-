@@ -48,7 +48,7 @@ def student_login(request):
                     'access': str(refresh.access_token),
                     'student_name': student.full_name,
                     'level': student.level
-                }, status=status.HTTP_200_OK)
+                }, status=status.HTTP_200_OK)   
             else:
                 return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         except Student.DoesNotExist:
