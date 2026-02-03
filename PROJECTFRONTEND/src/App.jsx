@@ -9,6 +9,7 @@ import AdminLogin from './pages/adminLogin'
 import StudentLogin from './pages/studentLoginn'
 import StudentDashboard from './pages/studentdashboard'
 import AdminDashboard from './pages/admindashboard'
+import ProtectedRoute from './component/protectedroute'
 
 function App() {
   
@@ -17,12 +18,16 @@ function App() {
     <>
       
       <Routes>
+        {/*public routes*/}
         <Route path="/" element={<LandingPage />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/studentlogin" element={<StudentLogin />} />
         <Route path ="/landingpage" element={<LandingPage />} />
-        <Route path="/studentdashboard" element={<StudentDashboard />} />
-        <Route path="/admindashboard" element={<AdminDashboard />} />
+
+        {/*protected routes*/}
+        <Route path="/studentdashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
+
+        <Route path="/admindashboard" element={<ProtectedRoute allowedRole="admin"  ><AdminDashboard /></ProtectedRoute>} />
       </Routes>
 
     </>
