@@ -25,9 +25,9 @@ function App() {
         <Route path ="/landingpage" element={<LandingPage />} />
 
         {/*protected routes*/}
-        <Route path="/studentdashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
+        <Route path="/studentdashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
-        <Route path="/admindashboard" element={<ProtectedRoute allowedRole="admin"  ><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admindashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       </Routes>
 
     </>

@@ -18,6 +18,19 @@ export const loginuser = async (matriculation_number, password) => {
 
 
 }
+//get student dashboard
+export const getStudentDashboard = async (token,matriculation_number) =>{
+    try {
+        const response = await axios.get(`${API_URL}student/dashboard/?matriculation_number=${matriculation_number}`,{
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    }catch(error){
+        throw error;
+    }
+}
 
 export const loginadmin = async (email, password) => {
     try {

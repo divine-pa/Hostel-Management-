@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config, Csv
  
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +21,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+_#k3+t3sa6vc+1v_&06yzgvcuz19l6o^*9du^-w%ylr7r@%a4'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-+_#k3+t3sa6vc+1v_&06yzgvcuz19l6o^*9du^-w%ylr7r@%a4')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -80,11 +81,11 @@ WSGI_APPLICATION = 'trialRoomallocation.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Room_allocation_system_db',
-        'USER': 'root',       # Your MySQL username
-        'PASSWORD': '09155564452', # Your MySQL password
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': config('DB_NAME', default='Room_allocation_system_db'),
+        'USER': config('DB_USER', default='root'),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='3306'),
     }
 }
 
@@ -181,8 +182,6 @@ SIMPLE_JWT = {
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'student_id',
-    'USER_ID_CLAIM': 'user_id',
 
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
