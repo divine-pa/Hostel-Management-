@@ -2,10 +2,9 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment
-from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer
+from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
@@ -43,21 +42,12 @@ def student_login(request):
             student = Student.objects.get(matric_number=matriculation_number)
 
             if student.password == password:
-                # Manually create tokens for student
-                refresh = RefreshToken()
-                refresh['user_id'] = student.student_id
-                refresh['matric_number'] = student.matric_number
-                
-                # CRITICAL: Add matric_number to access token too
-                access = refresh.access_token
-                access['matric_number'] = student.matric_number
-                
+                refresh = RefreshToken.for_user(student)
                 return Response({
                     'refresh': str(refresh),
-                    'access': str(access),
+                    'access': str(refresh.access_token),
                     'student_name': student.full_name,
-                    'level': student.level,
-                    'matric_number': student.matric_number
+                    'level': student.level
                 }, status=status.HTTP_200_OK)   
             else:
                 return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -90,43 +80,3 @@ def admin_login(request):
         except Admin.DoesNotExist:
             return Response({'message': 'Admin not found'}, status=status.HTTP_404_NOT_FOUND)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-#student dashboard
-@api_view(['GET'])
-def student_dashboard(request):
-    matric_no = request.query_params.get("matriculation_number")
-
-    if not matric_no:
-        return Response({"error": "Matriculation number needed"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    try:
-        student = Student.objects.get(matric_number=matric_no)
-        profile_data = StudentDashboardSerializer(student).data
-        
-        response_data = {
-            "profile": profile_data,
-            "available_halls": []
-        }
-        
-        # If they DON'T have a room AND their payment is VERIFIED, show them halls.
-        if not student.room and student.payment_status == "Verified":
-            halls = Hall.objects.filter(gender=student.gender, available_rooms__gt=0)
-            response_data["available_halls"] = HallSerializer(halls, many=True).data
-        
-        # If they HAVE a room, show their room details
-        elif student.room:
-            response_data["room_details"] = {
-                "hall_name": student.hall_selected.hall_name,
-                "room_number": student.room.room_number,
-            }
-        
-        return Response(response_data)
-
-    except Student.DoesNotExist:
-        return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-
-
-        
-    
