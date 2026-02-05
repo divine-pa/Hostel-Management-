@@ -18,7 +18,7 @@ function StudentDashboard() {
                 const user = JSON.parse(userString);
 
                 const matricparm = user.matriculation_number || user.matric_number
-                const data = await getStudentDashboard(user.access, matricparm);
+                const data = await getStudentDashboard(matricparm);
                 setDashboardData(data);
                 setLoading(false);
             } catch (error) {

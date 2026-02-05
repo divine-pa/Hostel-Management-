@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment
 from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer
@@ -94,6 +94,7 @@ def admin_login(request):
 
 #student dashboard
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Allow access without authentication
 def student_dashboard(request):
     matric_no = request.query_params.get("matriculation_number")
 
