@@ -55,3 +55,4 @@ class StudentDashboardSerializer(serializers.ModelSerializer):
         model = Student
         fields = ['full_name', 'matriculation_number', 'level', 'payment_status', 'department', 'room_details', 'hall_details']
 
+

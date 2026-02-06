@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const API_URL = "http://localhost:8000/api/"
-
+//student login 
 export const loginuser = async (matriculation_number, password) => {
     try {
         const response = await axios.post(API_URL + 'student/login/', {
@@ -27,7 +27,7 @@ export const getStudentDashboard = async (matriculation_number) => {
         throw error;
     }
 }
-
+//admin login 
 export const loginadmin = async (email, password) => {
     try {
         const response = await axios.post(API_URL + 'admin/login/', {
@@ -42,6 +42,8 @@ export const loginadmin = async (email, password) => {
         throw error;
     }
 }
+
+//admin dashboard
 
 export const logout = () => {
     localStorage.removeItem('user');
