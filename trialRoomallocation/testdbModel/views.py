@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment
-from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer
+from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
@@ -131,3 +131,17 @@ def student_dashboard(request):
 
         
     
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def admin_dashboard_data(request):
+    try:
+        admin_email = request.query_params.get("email")
+        admin = Admin.objects.get(email=admin_email)
+
+        #using the adimn serializer
+        profile_data = AdminDashboardSerializer(admin).data
+
+        return Response(profile_data)
+
+    except Admin.DoesNotExist:
+        return Response({"error": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)

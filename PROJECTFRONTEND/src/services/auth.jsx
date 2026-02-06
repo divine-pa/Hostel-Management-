@@ -44,6 +44,16 @@ export const loginadmin = async (email, password) => {
 }
 
 //admin dashboard
+export const getAdminDashboard = async (email) => {
+    try {
+        const response = await axios.get(`${API_URL}admin/dashboard/?email=${email}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
 
 export const logout = () => {
     localStorage.removeItem('user');
