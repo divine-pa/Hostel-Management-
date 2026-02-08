@@ -1,6 +1,7 @@
 import { getStudentDashboard } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { bookRoom } from "../services/auth";
 
 function StudentDashboard() {
     const [dashboardData, setDashboardData] = useState(null);
@@ -47,6 +48,33 @@ function StudentDashboard() {
     // Destructure for cleaner code
     const { profile, available_halls } = dashboardData;
     const { room_details } = profile;
+
+
+    const handleBooking = async (hall_id, hallName) => {
+        if (!window.confirm(`Are you sure you want to book ${hallName}`)) {
+            return
+        }
+        try {
+            setLoading(true)
+            const user = JSON.parse(localStorage.getItem("user"))
+            const matricparm = user.matriculation_number || user.matric_number
+            await bookRoom(matricparm, hall_id);
+
+            alert("Room Booked Successfully")
+            
+            // REFRESH THE DASHBOARD
+
+            const updateData = await getStudentDashboard(matricparm);
+            setDashboardData(updateData);
+            
+        }catch(error){
+            console.error(error)
+            alert(error.response?.data?.error || "Failed to book room")
+        }
+        finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <div style={{ minHeight: '100vh', padding: 'var(--spacing-lg)', backgroundColor: 'var(--color-bg)' }}>
@@ -145,6 +173,9 @@ function StudentDashboard() {
                                                         transition: 'all var(--transition-base)',
                                                         cursor: 'pointer'
                                                     }}
+
+                                                    
+            
                                                     onMouseEnter={(e) => {
                                                         e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
                                                         e.currentTarget.style.transform = 'translateY(-2px)';
@@ -153,7 +184,7 @@ function StudentDashboard() {
                                                         e.currentTarget.style.boxShadow = 'none';
                                                         e.currentTarget.style.transform = 'translateY(0)';
                                                     }}
-                                                >
+                                                > 
                                                     <div>
                                                         <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
                                                             {hall.hall_name}
@@ -164,7 +195,7 @@ function StudentDashboard() {
                                                     </div>
                                                     <button
                                                         className="btn btn-primary"
-                                                        onClick={() => alert(`Logic to book room in ${hall.hall_name} coming next!`)}
+                                                        onClick={() => handleBooking(hall.hall_id, hall.hall_name)}
                                                     >
                                                         Select
                                                     </button>

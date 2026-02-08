@@ -62,3 +62,18 @@ export const logout = () => {
 export const Adminlogout = () => {
     localStorage.removeItem('Admin')
 }
+
+
+
+
+export const bookRoom = async (matriculation_number, hall_id) => {
+    try {
+        const response = await axios.post(API_URL + 'bookRoom/', {
+            matriculation_number:matriculation_number,
+            hall_id:hall_id
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

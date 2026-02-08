@@ -39,7 +39,7 @@ class LoginSerializer(serializers.Serializer):
 class AdminLoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField(write_only=True)
-    
+     
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
@@ -114,3 +114,12 @@ class AdminDashboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
         fields = ['name', 'email', 'role', 'hall_details']
+
+
+
+#booking serializer ( for rooms)
+
+class BookingSerializer(serializers.Serializer):
+    hall_id = serializers.IntegerField()
+    matriculation_number = serializers.CharField()
+    

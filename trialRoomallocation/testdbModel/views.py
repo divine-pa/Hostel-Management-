@@ -5,10 +5,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment
-from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer
+from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer,BookingSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-
+from django.db import transaction
+from django.db.models import F
+from .models import Allocation, Room
+from django.utils import timezone
+ 
 @api_view(['GET'])
 def get_student(request):
     student = Student.objects.all()
@@ -145,3 +149,73 @@ def admin_dashboard_data(request):
 
     except Admin.DoesNotExist:
         return Response({"error": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+#room booking algorithm logic
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def book_room(request):
+    # Check if the data sent (hall_id, matric) is valid format
+    serializer = BookingSerializer(data=request.data)
+    if serializer.is_valid():
+       hall_id = serializer.validated_data['hall_id']
+       matric = serializer.validated_data['matriculation_number']
+
+
+       try:
+           #using transaction atomic
+           with transaction.atomic():
+            # We lock the student row so they can't double-click 
+                # or book from two devices at once.
+            student = Student.objects.select_for_update().get(matric_number=matric)
+
+            #validation
+            if student.room:
+                return Response({"error": "Student already has a room"}, status=status.HTTP_400_BAD_REQUEST)
+            if student.payment_status != "Verified":
+                return Response({"error": "Payment not verified"}, status=status.HTTP_400_BAD_REQUEST)
+
+            #4. sequential algorithm
+            room = Room.objects.select_for_update().filter(
+                hall_id=hall_id,
+                current_occupants__lt=F('capacity')
+            ).order_by('room_number').first()
+            
+            if not room:
+                return Response({"error": "The hall is fully booked"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            #execute the booking
+            room.current_occupants += 1
+            room.save()
+            
+            #update the student record
+            student.room = room
+            student.hall_selected = room.hall
+            student.save()
+
+            #create the allocation record
+            allocation = Allocation.objects.create(
+                student=student,
+                room=room,
+                allocation_date=timezone.now(),
+                status='active'
+            )
+            
+            #sucess message
+            return Response({"message": "Room booked successfully",
+            "room number":room.room_number,
+            "hall name":room.hall.hall_name}, status=status.HTTP_200_OK)
+            
+
+       except Student.DoesNotExist:
+           return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+       #except Room.DoesNotExist:
+          # return Response({"error": "Room not found"}, status=status.HTTP_404_NOT_FOUND)
+       except Exception as e:
+           return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+           
+
+    
