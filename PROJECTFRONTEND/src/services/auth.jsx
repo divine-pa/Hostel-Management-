@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const API_URL = "http://localhost:8000/api/"
-
+//student login 
 export const loginuser = async (matriculation_number, password) => {
     try {
         const response = await axios.post(API_URL + 'student/login/', {
@@ -19,19 +19,15 @@ export const loginuser = async (matriculation_number, password) => {
 
 }
 //get student dashboard
-export const getStudentDashboard = async (token,matriculation_number) =>{
+export const getStudentDashboard = async (matriculation_number) => {
     try {
-        const response = await axios.get(`${API_URL}student/dashboard/?matriculation_number=${matriculation_number}`,{
-            headers:{
-                Authorization: `Bearer ${token}`
-            }
-        });
+        const response = await axios.get(`${API_URL}student/dashboard/?matriculation_number=${matriculation_number}`);
         return response.data;
-    }catch(error){
+    } catch (error) {
         throw error;
     }
 }
-
+//admin login 
 export const loginadmin = async (email, password) => {
     try {
         const response = await axios.post(API_URL + 'admin/login/', {
@@ -46,6 +42,18 @@ export const loginadmin = async (email, password) => {
         throw error;
     }
 }
+
+//admin dashboard
+export const getAdminDashboard = async (email) => {
+    try {
+        const response = await axios.get(`${API_URL}admin/dashboard/?email=${email}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
 
 export const logout = () => {
     localStorage.removeItem('user');

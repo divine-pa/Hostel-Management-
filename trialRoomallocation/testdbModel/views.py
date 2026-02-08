@@ -1,11 +1,11 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.decorators import api_view
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment
-from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer
+from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 
@@ -94,6 +94,7 @@ def admin_login(request):
 
 #student dashboard
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Allow access without authentication
 def student_dashboard(request):
     matric_no = request.query_params.get("matriculation_number")
 
@@ -130,3 +131,17 @@ def student_dashboard(request):
 
         
     
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def admin_dashboard_data(request):
+    try:
+        admin_email = request.query_params.get("email")
+        admin = Admin.objects.get(email=admin_email)
+
+        #using the adimn serializer
+        profile_data = AdminDashboardSerializer(admin).data
+
+        return Response(profile_data)
+
+    except Admin.DoesNotExist:
+        return Response({"error": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)
