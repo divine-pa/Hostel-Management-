@@ -150,23 +150,37 @@ function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/*room search logic */}
+                        {/*room search bar */}
                         <div className="mb-6">
                             <input
                                 type="text"
                                 placeholder="Search by Room Number, Student Name, or Matric No..."
                                 value={searchTerm}
                                 onChange={handlesearch} // Connect the function here
-                                className=" a"
+                                className="a"
+                                style={{
+                                    border: '2px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    padding: 'var(--spacing-md)',
+                                    fontSize: 'var(--font-size-md)',
+                                    color: 'var(--color-text)',
+                                    background: 'var(--color-background)',
+                                    transition: 'all var(--transition-base)',
+                                    outline: 'none',
+                                    width: '100%',
+                                    maxWidth: '400px',
+                                    margin: '0 auto',
+                                    boxShadow: 'var(--shadow-sm)',
+                                }}
                             />
                         </div>
                         {/* Rooms Section */}
                         <div>
                             <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>Room Details</h3>
 
-                            {/* 1. CHANGE THIS: Use 'filteredRooms' instead of 'hall_details.rooms' */}
+                            {/* 1.room search */}
                             {filteredRooms && filteredRooms.length > 0 ? (
-                                <div className="grid grid-2">
+                                <div className="grid grid-1">
                                     {filteredRooms.map((room) => (
                                         <div
                                             key={room.room_id}
@@ -218,40 +232,6 @@ function AdminDashboard() {
                                                 </div>
                                             </div>
 
-                                            {/* Students List (Your existing code) */}
-                                            {room.occupants_list && room.occupants_list.length > 0 && (
-                                                <div style={{
-                                                    background: 'var(--color-bg)',
-                                                    padding: 'var(--spacing-md)',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    marginTop: 'var(--spacing-md)'
-                                                }}>
-                                                    <h5 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--spacing-md)' }}>
-                                                        Occupants:
-                                                    </h5>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                                                        {room.occupants_list.map((student) => (
-                                                            <div
-                                                                key={student.matric_number}
-                                                                style={{
-                                                                    background: 'white',
-                                                                    padding: 'var(--spacing-md)',
-                                                                    borderRadius: 'var(--radius-md)',
-                                                                    borderLeft: '4px solid var(--color-primary)',
-                                                                    fontSize: 'var(--font-size-sm)'
-                                                                }}
-                                                            >
-                                                                <p style={{ fontWeight: '700', marginBottom: 'var(--spacing-xs)' }}>
-                                                                    {student.full_name}
-                                                                </p>
-                                                                <p style={{ marginBottom: '0', fontSize: 'var(--font-size-xs)', color: '#666' }}>
-                                                                    {student.matric_number}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
                                     ))}
                                 </div>
