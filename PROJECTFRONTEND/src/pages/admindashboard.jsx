@@ -8,6 +8,13 @@ function AdminDashboard() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    //for search bar
+    const [searchTerm, setSearchTerm] = useState("");
+    const [hallData, setHallData] = useState(null); // The Master Data
+    const [filteredRooms, setFilteredRooms] = useState([]); // The Display List
+
+
+
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -21,6 +28,13 @@ function AdminDashboard() {
                 const adminparm = admin.email
                 const data = await getAdminDashboard(adminparm);
                 setDashboardData(data);
+
+                // Initialize hallData and filteredRooms with the loaded data
+                if (data.hall_details) {
+                    setHallData(data.hall_details);
+                    setFilteredRooms(data.hall_details.rooms || []);
+                }
+
                 setLoading(false)
 
             } catch (error) {
@@ -47,6 +61,28 @@ function AdminDashboard() {
 
     // Destructure for cleaner code
     const { name, email, role, hall_details } = dashboardData;
+
+
+    const handlesearch = (e) => {
+        const term = e.target.value.toLowerCase();
+        setSearchTerm(term);
+
+        if (term === "") {
+            setFilteredRooms(hallData.rooms);
+            return;
+        }
+
+        const results = hallData.rooms.filter((room) => {
+            const matchesRoomNumber = room.room_number.toLowerCase().includes(term);
+            const matchesStudent = room.occupants_list.some((student) =>
+                student.full_name.toLowerCase().includes(term) ||
+                student.matric_number.toLowerCase().includes(term)
+            );
+            return matchesRoomNumber || matchesStudent;
+        });
+
+        setFilteredRooms(results);
+    }
 
     return (
         <div style={{ minHeight: '100vh', padding: 'var(--spacing-lg)', backgroundColor: 'var(--color-bg)' }}>
@@ -114,20 +150,34 @@ function AdminDashboard() {
                             </div>
                         </div>
 
+                        {/*room search logic */}
+                        <div className="mb-6">
+                            <input
+                                type="text"
+                                placeholder="Search by Room Number, Student Name, or Matric No..."
+                                value={searchTerm}
+                                onChange={handlesearch} // Connect the function here
+                                className=" a"
+                            />
+                        </div>
                         {/* Rooms Section */}
                         <div>
                             <h3 style={{ marginBottom: 'var(--spacing-lg)' }}>Room Details</h3>
-                            {hall_details.rooms && hall_details.rooms.length > 0 ? (
+
+                            {/* 1. CHANGE THIS: Use 'filteredRooms' instead of 'hall_details.rooms' */}
+                            {filteredRooms && filteredRooms.length > 0 ? (
                                 <div className="grid grid-2">
-                                    {hall_details.rooms.map((room) => (
+                                    {filteredRooms.map((room) => (
                                         <div
                                             key={room.room_id}
                                             style={{
                                                 border: '2px solid var(--color-border)',
                                                 borderRadius: 'var(--radius-lg)',
                                                 padding: 'var(--spacing-lg)',
-                                                transition: 'all var(--transition-base)'
+                                                transition: 'all var(--transition-base)',
+                                                background: 'white'
                                             }}
+                                            // ... keep your existing onMouseEnter/Leave logic ...
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
                                                 e.currentTarget.style.borderColor = 'var(--color-primary)';
@@ -137,26 +187,38 @@ function AdminDashboard() {
                                                 e.currentTarget.style.borderColor = 'var(--color-border)';
                                             }}
                                         >
-                                            <h4 style={{
-                                                fontSize: 'var(--font-size-xl)',
-                                                marginBottom: 'var(--spacing-md)',
-                                                paddingBottom: 'var(--spacing-sm)',
-                                                borderBottom: '2px solid var(--color-border)'
-                                            }}>
-                                                Room {room.room_number}
-                                            </h4>
-                                            <div style={{ display: 'grid', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-md)', fontSize: 'var(--font-size-sm)' }}>
-                                                <p><strong>Capacity:</strong> {room.capacity}</p>
-                                                <p><strong>Current Occupants:</strong> {room.current_occupants}</p>
-                                                <p>
-                                                    <strong>Status:</strong>{' '}
-                                                    <span className={room.room_status === 'Available' ? 'badge badge-success' : 'badge badge-error'}>
-                                                        {room.room_status}
-                                                    </span>
-                                                </p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
+                                                <h4 style={{ fontSize: 'var(--font-size-xl)', margin: 0 }}>
+                                                    Room {room.room_number}
+                                                </h4>
+                                                <span className={room.room_status === 'Available' ? 'badge badge-success' : 'badge badge-error'}>
+                                                    {room.room_status}
+                                                </span>
                                             </div>
 
-                                            {/* Students in this room */}
+                                            {/* 2. NEW: The Progress Bar */}
+                                            <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                                                <div style={{
+                                                    width: '100%',
+                                                    height: '8px',
+                                                    background: '#e5e7eb',
+                                                    borderRadius: '4px',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    <div style={{
+                                                        width: `${(room.current_occupants / room.capacity) * 100}%`,
+                                                        height: '100%',
+                                                        background: room.current_occupants >= room.capacity ? '#ef4444' : '#3b82f6',
+                                                        transition: 'width 0.5s ease'
+                                                    }}></div>
+                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', marginTop: '4px', color: '#6b7280' }}>
+                                                    <span>Occupancy</span>
+                                                    <span>{room.current_occupants} / {room.capacity}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Students List (Your existing code) */}
                                             {room.occupants_list && room.occupants_list.length > 0 && (
                                                 <div style={{
                                                     background: 'var(--color-bg)',
@@ -182,10 +244,9 @@ function AdminDashboard() {
                                                                 <p style={{ fontWeight: '700', marginBottom: 'var(--spacing-xs)' }}>
                                                                     {student.full_name}
                                                                 </p>
-                                                                <p style={{ marginBottom: 'var(--spacing-xs)' }}>Matric: {student.matric_number}</p>
-                                                                <p style={{ marginBottom: 'var(--spacing-xs)' }}>Level: {student.level}</p>
-                                                                <p style={{ marginBottom: 'var(--spacing-xs)' }}>Dept: {student.department}</p>
-                                                                <p style={{ marginBottom: '0' }}>Phone: {student.phone_number}</p>
+                                                                <p style={{ marginBottom: '0', fontSize: 'var(--font-size-xs)', color: '#666' }}>
+                                                                    {student.matric_number}
+                                                                </p>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -195,7 +256,7 @@ function AdminDashboard() {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-secondary">No rooms available</p>
+                                <p className="text-secondary">No rooms match your search.</p>
                             )}
                         </div>
                     </div>
