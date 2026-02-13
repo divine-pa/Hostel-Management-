@@ -7,7 +7,8 @@
 import { RecipetData } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import ReceiptDocument from './ReceiptDocument';
 // ==================================================
 // RECEIPT PAGE COMPONENT
 // ==================================================
@@ -56,12 +57,6 @@ function ReceiptPage() {
         loadData();
     }, [navigate])
 
-    // ===== PRINT FUNCTION =====
-    // This runs when student clicks "Print Receipt"
-    const handlePrint = () => {
-        window.print();  // Opens the browser's print dialog
-    }
-
     // ===== LOADING & ERROR STATES =====
     // If still loading, show "Loading..." message
     if (loading) return <div>Loading receipt...</div>;
@@ -103,9 +98,26 @@ function ReceiptPage() {
             <p><strong>Instructions:</strong></p>
             <p>Please present this receipt at the porter's lodge to access your room.</p>
 
-            <button onClick={handlePrint}>Print Receipt</button>
-            <button onClick={() => navigate('/studentdashboard')}>Back to Dashboard</button>
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button onClick={() => navigate('/studentdashboard')}>Back to Dashboard</button>
+
+                {recieptData && (
+                    <PDFDownloadLink document={<ReceiptDocument data={recieptData} />}
+                        fileName={`BU-Receipt_${recieptData.matric_no}.pdf`}
+                        style={{
+                            padding: '12px 24px',
+                            backgroundColor: '#003366',
+                            color: 'white',
+                            borderRadius: '8px',
+                            textDecoration: 'none'
+                        }}>
+                        {({ loading }) => loading ? 'Generating...' : 'Download E-receipt'}
+
+                    </PDFDownloadLink>
+                )}
+            </div>
         </div>
+
     )
 }
 
