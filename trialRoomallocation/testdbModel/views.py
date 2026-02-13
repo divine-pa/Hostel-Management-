@@ -20,6 +20,7 @@ from django.db import transaction
 from django.db.models import F
 from .models import Allocation, Room
 from django.utils import timezone
+from .utils import send_allocation_email
  
 # ==================================================
 # GET ALL STUDENTS - Shows a list of all students
@@ -319,6 +320,14 @@ def book_room(request):
                 allocation_date=timezone.now(),  # Current date and time
                 status='active'  # The allocation is active
             )
+
+            # send email to student
+            if allocation:
+                send_allocation_email(
+                    student_email=student.email,
+                    student_name=student.full_name,
+                    room_details=f"{room.hall.hall_name} - Room {room.room_number}"
+                )
             
             # Step 8: Send back a success message!
             return Response({
