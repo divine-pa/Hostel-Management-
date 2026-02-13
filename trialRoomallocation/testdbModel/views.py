@@ -21,6 +21,7 @@ from django.db.models import F
 from .models import Allocation, Room
 from django.utils import timezone
 from .utils import send_allocation_email
+from django.db.models import Sum, Q , F, Count
  
 # ==================================================
 # GET ALL STUDENTS - Shows a list of all students

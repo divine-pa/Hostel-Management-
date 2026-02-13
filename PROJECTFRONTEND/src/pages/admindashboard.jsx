@@ -42,58 +42,74 @@ function AdminDashboard() {
 
 
 
+    // ===== FUNCTION TO FETCH DASHBOARD DATA =====
+    // This function loads the dashboard data from the server
+    // We extracted it so we can call it both on initial load AND for auto-refresh
+    const fetchDashboardData = async () => {
+        try {
+            // Step 1: Check if the admin is logged in
+            const userString = localStorage.getItem('Admin')
+
+            // If no login info found, send them to login page
+            if (!userString) {
+                navigate('/adminlogin')
+                return
+            }
+
+            // Step 2: Get the admin's login info from storage
+            const admin = JSON.parse(userString)
+
+            // Step 3: Get the admin's email
+            const adminparm = admin.email
+
+            // Step 4: Fetch the dashboard data from the server
+            const data = await getAdminDashboard(adminparm);
+            setDashboardData(data);
+
+            // Step 5: Initialize the search functionality
+            // Save the hall data for searching
+            if (data.hall_details) {
+                setHallData(data.hall_details);  // Master data (never changes)
+                setFilteredRooms(data.hall_details.rooms || []);  // Display list (changes when searching)
+            }
+
+            // Step 6: Stop showing "loading" (only on first load)
+            setLoading(false)
+
+        } catch (error) {
+            // If something went wrong, show error message
+            console.error("Dashboard Error:", error);
+            setError("Failed to load dashboard data.");  // Set error message
+            setLoading(false);  // Stop showing "loading"
+
+            // If error is "unauthorized" (401), send them to login
+            if (error.response && error.response.status === 401) {
+                navigate('/adminlogin')
+            }
+        }
+    };
+
     // ===== LOAD DATA WHEN PAGE OPENS =====
     // useEffect runs automatically when the page loads
     useEffect(() => {
-        // Function to load the dashboard data
-        const loadData = async () => {
-            try {
-                // Step 1: Check if the admin is logged in
-                const userString = localStorage.getItem('Admin')
-
-                // If no login info found, send them to login page
-                if (!userString) {
-                    navigate('/adminlogin')
-                    return
-                }
-
-                // Step 2: Get the admin's login info from storage
-                const admin = JSON.parse(userString)
-
-                // Step 3: Get the admin's email
-                const adminparm = admin.email
-
-                // Step 4: Fetch the dashboard data from the server
-                const data = await getAdminDashboard(adminparm);
-                setDashboardData(data);
-
-                // Step 5: Initialize the search functionality
-                // Save the hall data for searching
-                if (data.hall_details) {
-                    setHallData(data.hall_details);  // Master data (never changes)
-                    setFilteredRooms(data.hall_details.rooms || []);  // Display list (changes when searching)
-                }
-
-                // Step 6: Stop showing "loading"
-                setLoading(false)
-
-            } catch (error) {
-                // If something went wrong, show error message
-                console.error("Dashboard Error:", error);
-                setError("Failed to load dashboard data.");  // Set error message
-                setLoading(false);  // Stop showing "loading"
-
-                // If error is "unauthorized" (401), send them to login
-                if (error.response && error.response.status === 401) {
-                    navigate('/adminlogin')
-                }
-            }
-
-        };
-
-        // Call the loadData function
-        loadData()
+        // Call the fetch function on initial load
+        fetchDashboardData()
     }, [navigate])  // Run this when the page loads
+
+    // ===== AUTO-REFRESH EVERY 10 SECONDS =====
+    // This makes the dashboard update automatically to show live changes
+    useEffect(() => {
+        // Set up an interval that calls fetchDashboardData every 10 seconds
+        const refreshInterval = setInterval(() => {
+            fetchDashboardData();
+        }, 10000);  // 10000 milliseconds = 10 seconds
+
+        // CLEANUP FUNCTION: This runs when the component is removed from the page
+        // It's important to clear the interval to prevent memory leaks
+        return () => {
+            clearInterval(refreshInterval);
+        };
+    }, [])  // Empty array means this only sets up once when component mounts
 
     // ===== LOGOUT FUNCTION =====
     // This runs when the admin clicks the "Logout" button
@@ -247,6 +263,20 @@ function AdminDashboard() {
                                     <p style={{ fontSize: 'var(--font-size-sm)', opacity: '0.9', marginBottom: 'var(--spacing-xs)' }}>Occupancy Rate</p>
                                     <p style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', marginBottom: '0' }}>{hall_details.occupancy_rate}</p>
                                 </div>
+
+
+                                {/* TRUE AVAILABLE BEDS */}
+                                <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-md)' }}>
+                                    <p style={{ fontSize: 'var(--font-size-sm)', opacity: '0.9', marginBottom: 'var(--spacing-xs)' }}>True Available Beds</p>
+                                    <p style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', marginBottom: '0' }}>{hall_details.true_available_beds}</p>
+                                </div>
+
+                                {/* ROOMS UNDER MAINTENANCE */}
+                                <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-md)' }}>
+                                    <p style={{ fontSize: 'var(--font-size-sm)', opacity: '0.9', marginBottom: 'var(--spacing-xs)' }}>Rooms Under Maintenance</p>
+                                    <p style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', marginBottom: '0' }}>{hall_details.rooms_under_maintenance}</p>
+                                </div>
+
                             </div>
                         </div>
 

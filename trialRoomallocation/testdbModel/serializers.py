@@ -158,6 +158,11 @@ class HallStatsSerializer(serializers.ModelSerializer):
     # occupancy_rate: A calculated field (shows what percentage of beds are filled)
     occupancy_rate = serializers.SerializerMethodField()
 
+    # NEW: Add these to show maintenance impact
+    rooms_under_maintenance = serializers.SerializerMethodField()
+    true_available_beds = serializers.SerializerMethodField()
+
+
     class Meta:
         model = Hall  # Get data from Hall table
         fields = [
@@ -165,6 +170,8 @@ class HallStatsSerializer(serializers.ModelSerializer):
             'gender',  # Is it for males or females?
             'total_rooms',  # Total number of rooms
             'available_rooms',  # How many rooms are still empty
+            'rooms_under_maintenance',  # NEW: Rooms under maintenance
+            'true_available_beds',  # NEW: True available beds
             'total_students_in_hall',  # Total students in the hall (calculated)
             'occupancy_rate',  # Percentage of beds filled (calculated)
             'rooms'  # List of all rooms with their details
@@ -193,6 +200,18 @@ class HallStatsSerializer(serializers.ModelSerializer):
         
         # Step 5: Round to whole number and add "%" sign
         return f"{round(percentage)}%"
+
+    # NEW: Show beds that are actually bookable (Not Full AND Not Broken)
+    def get_true_available_beds(self, obj):
+        rooms = obj.room_set.filter(is_under_maintenance=False)
+        total_cap = sum(room.capacity for room in rooms)
+        current = sum(room.current_occupants for room in rooms)
+        return total_cap - current
+
+    # NEW: Count rooms currently under maintenance
+    def get_rooms_under_maintenance(self, obj):
+        # Count how many rooms in this hall are being repaired
+        return obj.room_set.filter(is_under_maintenance=True).count()
 
 # ==================================================
 # ADMIN DASHBOARD SERIALIZER - Main dashboard view
