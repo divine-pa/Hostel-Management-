@@ -12,7 +12,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from .models import Student, Admin, Hall, Payment
+from .models import Student, Admin, Hall, Payment, Receipt
 from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer,BookingSerializer,AllocationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
@@ -20,8 +20,9 @@ from django.db import transaction
 from django.db.models import F
 from .models import Allocation, Room
 from django.utils import timezone
-from .utils import send_allocation_email
+from .utils import send_allocation_email,generate_transaction_id
 from django.db.models import Sum, Q , F, Count
+from django.utils import timezone
  
 # ==================================================
 # GET ALL STUDENTS - Shows a list of all students
@@ -314,13 +315,36 @@ def book_room(request):
             student.hall_selected = room.hall
             student.save()  # Save the student's new room
 
+            # Create the autonomous receipt record first
+            transaction_id = generate_transaction_id()
+            
+            # Get the student's payment record to retrieve the amount paid
+            try:
+                payment_record = Payment.objects.get(matric_number=student, payment_status="Verified")
+                amount = payment_record.amount_paid
+            except Payment.DoesNotExist:
+                amount = 0  # Default to 0 if no payment record found
+
+            new_receipt = Receipt.objects.create(
+               payment_reference=transaction_id,
+               student_name = student.full_name,
+               matric_number = student,
+               amount_paid = amount,
+               date_paid = timezone.now(),
+               verified=True,
+               created_at = timezone.now(),
+               
+            )
+
             # Create an allocation record (like a receipt of this booking)
             allocation = Allocation.objects.create(
                 student=student,
                 room=room,
+                receipt=new_receipt,
                 allocation_date=timezone.now(),  # Current date and time
                 status='active'  # The allocation is active
             )
+
 
             # send email to student
             if allocation:
@@ -329,7 +353,7 @@ def book_room(request):
                     student_name=student.full_name,
                     room_details=f"{room.hall.hall_name} - Room {room.room_number}"
                 )
-            
+           
             # Step 8: Send back a success message!
             return Response({
                 "message": "Room booked successfully",
@@ -387,6 +411,9 @@ def allocation_list(request):
             'gender': allocation.student.gender,
             'phone_number': allocation.student.phone_number,
             'email': allocation.student.email,
+            'transaction_reference': allocation.receipt.payment_reference if allocation.receipt else 'N/A',
+            'amount_paid': allocation.receipt.amount_paid if allocation.receipt else 0,
+            #'date_paid': new_receipt.date_paid,
         }
         
         #  Send back the receipt data

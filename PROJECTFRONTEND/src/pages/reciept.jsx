@@ -92,7 +92,9 @@ function ReceiptPage() {
             <p><strong>Room Number:</strong> {recieptData.room_number}</p>
             <p><strong>Allocation Date:</strong> {new Date(recieptData.allocation_date).toLocaleDateString()}</p>
             <p><strong>Status:</strong> {recieptData.status}</p>
-
+            <p><strong>Transaction Reference:</strong> {recieptData.transaction_reference}</p>
+            <p><strong>Amount Paid:</strong> {recieptData.amount_paid}</p>
+            
             <hr />
 
             <p><strong>Instructions:</strong></p>

@@ -36,6 +36,8 @@ const ReceiptDocument = ({ data }) => (
                 <Text style={styles.row}>Room Number: {data.room_number}</Text>
                 <Text style={styles.row}>Allocation Date: {new Date(data.allocation_date).toLocaleDateString()}</Text>
                 <Text style={styles.row}>Status: {data.status}</Text>
+                <Text style={styles.row}>Transaction Reference: {data.transaction_reference}</Text>
+                <Text style={styles.row}>Amount Paid: {data.amount_paid}</Text>
             </View>
 
             <Text style={styles.footer}>
