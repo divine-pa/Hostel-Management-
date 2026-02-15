@@ -1,0 +1,20 @@
+# Django Framework
+Django==6.0.1
+
+# Django REST Framework
+djangorestframework==3.15.2
+
+# JWT Authentication
+djangorestframework-simplejwt==5.4.0
+
+# CORS Headers
+django-cors-headers==4.6.0
+
+# Environment Configuration
+python-decouple==3.8
+
+# MySQL Database Driver
+# Using PyMySQL instead of mysqlclient (easier on Windows - no C++ build tools needed)
+PyMySQL==1.1.1
+# If you prefer mysqlclient (requires Microsoft Visual C++ Build Tools):
+# mysqlclient==2.2.7
