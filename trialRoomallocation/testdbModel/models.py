@@ -118,8 +118,8 @@ class Log(models.Model):
     # action: What happened? (like "Student logged in" or "Room allocated")
     action = models.CharField(max_length=255)
     
-    # user_role: Was it a "student" or "admin" who did this?
-    user_role = models.CharField(max_length=7)
+    # user_role: Was it a "student" or "admin" who did this? (Now stores email)
+    user_role = models.CharField(max_length=100)
     
     # user_id: The ID number of the person who did this action
     user_id = models.IntegerField(blank=True, null=True)
@@ -133,6 +133,7 @@ class Log(models.Model):
     class Meta:
         managed = False
         db_table = 'log'
+        ordering = ['-timestamp']
 
 
 # ==================================================

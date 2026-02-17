@@ -12,7 +12,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from .models import Student, Admin, Hall, Payment, Receipt
+from .models import Student, Admin, Hall, Payment, Receipt, Log
 from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer,BookingSerializer,AllocationSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
@@ -426,3 +426,65 @@ def allocation_list(request):
     except Allocation.DoesNotExist:
         # If no allocation found for this student, return error message
         return Response({'error': 'No allocation found for this student'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+#========================
+# room maintenance module 
+#=======================
+
+@api_view(['PATCH'])
+@permission_classes([AllowAny])  # Using AllowAny as JWT is not yet working
+def toggle_maintenance(request, room_id):
+    """
+    Toggle the maintenance status of a room.
+    When a room is under maintenance, it cannot be allocated to students.
+    """
+    try:
+        # Wrap in atomic transaction since we're using select_for_update()
+        with transaction.atomic():
+            # Get the room and lock it for update to prevent race conditions
+            room = Room.objects.select_for_update().get(room_id=room_id)
+            
+            # Store the old status BEFORE changing it (Fixed: was inverted before)
+            old_status = room.is_under_maintenance
+            
+            # Toggle the maintenance status
+            room.is_under_maintenance = not room.is_under_maintenance
+            room.save()
+            
+            # Store the new status AFTER changing it (Fixed: was always False before)
+            new_status = room.is_under_maintenance
+            
+            # Record in Audit Log for accountability
+            # Get admin email from query parameters (sent by frontend)
+            user_email = request.query_params.get("email") or 'ADMIN'  # Fallback if not provided
+            user_id = None  # We don't need user_id since we have email
+            
+            Log.objects.create(
+                user_role=user_email,
+                action=f"Toggled Room {room.room_number} Maintenance Status",
+                description=f"Changed Room {room.room_number} in {room.hall.hall_name} maintenance status from {old_status} to {new_status}",
+                timestamp=timezone.now(),
+                user_id=user_id,
+            )
+        
+        return Response({
+            "message": "Room maintenance status toggled successfully",
+            "room_number": room.room_number,
+            "hall_name": room.hall.hall_name,
+            "is_under_maintenance": room.is_under_maintenance,
+        }, status=status.HTTP_200_OK)
+        
+    except Room.DoesNotExist:
+        return Response({
+            "error": "Room not found",
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        # Log the actual error for debugging
+        print(f"Error toggling room maintenance: {str(e)}")
+        return Response({
+            "error": "Failed to toggle room maintenance status",
+            "details": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
