@@ -30,10 +30,60 @@ This is the **backend API** for the Hostel Management System. It provides:
 
 - **JWT Authentication**: Secure token-based authentication for students and admins
 - **Student Dashboard**: Personalized dashboard showing payment status, room details, and available halls
+- **Admin Dashboard**: Comprehensive hall statistics with room occupancy and maintenance tracking
+- **Room Booking System**: Sequential room allocation algorithm preventing double bookings
+- **Payment Verification**: Automated payment status verification before room allocation
+- **Allocation Receipts**: Auto-generated allocation receipts with transaction references
+- **Email Notifications**: Automated email notifications when rooms are allocated
+- **Room Maintenance Management**: Admin toggle for marking rooms under maintenance
+- **Audit Logging**: Comprehensive logging system for all critical actions
 - **RESTful API**: Clean API endpoints for frontend integration
 - **CORS Enabled**: Ready for React/Vue frontend integration
 - **Environment Variables**: Secure configuration management
-- **MySQL Database**: Robust data storage
+- **MySQL Database**: Robust data storage with transaction safety
+
+## 🎨 Core Features Explained
+
+### Room Booking System
+
+The system implements a **sequential room allocation algorithm** that ensures:
+
+1. **Fair Distribution**: Rooms are assigned in numerical order (Room 101, 102, etc.)
+2. **No Double Booking**: Database transactions and row-level locking prevent conflicts
+3. **Payment Verification**: Only students with verified payments can book rooms
+4. **Gender Segregation**: Students are only shown halls matching their gender
+5. **Maintenance Awareness**: Rooms under maintenance are excluded from allocation
+6. **Automatic Receipt Generation**: Each booking creates a unique transaction reference
+
+**Booking Flow:**
+- Student logs in → Dashboard shows available halls (if payment verified)
+- Student selects a hall → System finds first available room
+- System creates allocation record → Generates receipt → Sends confirmation email
+
+### Room Maintenance Management
+
+Admins can toggle room maintenance status with:
+- **Real-time Updates**: Maintenance status immediately affects availability
+- **Audit Logging**: All maintenance toggles are logged with admin email and timestamp
+- **Dashboard Integration**: Admin dashboard shows rooms under maintenance count
+- **True Available Beds**: Calculates bookable beds excluding maintenance rooms
+
+### Email Notification System
+
+Automated emails are sent when:
+- **Room Allocation**: Student receives confirmation with room details
+- **Email Content**: Includes student name, hall name, and room number
+
+> **Note**: Email functionality requires proper SMTP configuration in `.env` file
+
+### Receipt Generation
+
+Each allocation automatically creates a receipt with:
+- Unique receipt number format: `BU-HAMS-{allocation_id}`
+- Transaction reference (auto-generated)
+- Complete student and room details
+- Payment information
+- Allocation timestamp
 
 ## 🔧 Prerequisites
 
@@ -92,6 +142,9 @@ pip install python-decouple
 
 # Install MySQL connector
 pip install mysqlclient
+
+# Install email dependencies (for allocation notifications)
+pip install python-dotenv
 ```
 
 > **Note**: If `mysqlclient` installation fails on Windows, see the [Troubleshooting](#2-mysqlclient-installation-fails) section below.
@@ -191,6 +244,14 @@ We use environment variables to keep sensitive information (like database passwo
 
    # Debug Mode
    DEBUG=True
+
+   # Email Configuration (for allocation notifications)
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USE_TLS=True
+   EMAIL_HOST_USER=your_email@gmail.com    # ⬅️ CHANGE THIS!
+   EMAIL_HOST_PASSWORD=your_app_password   # ⬅️ CHANGE THIS!
+   DEFAULT_FROM_EMAIL=your_email@gmail.com
    ```
 
    ⚠️ **IMPORTANT**: Replace `your_mysql_password_here` with your actual MySQL root password!
@@ -261,12 +322,19 @@ All API endpoints are prefixed with `/api/`:
 | `/api/payment/` | GET | Get all payments | None |
 | `/api/student/login/` | POST | Student login | `matriculation_number`, `password` |
 | `/api/admin/login/` | POST | Admin login | `email`, `password` |
+| `/api/student/dashboard/` | GET | Get student dashboard | `matriculation_number` (query param) |
+| `/api/admin/dashboard/` | GET | Get admin dashboard | `email` (query param) |
+| `/api/bookRoom/` | POST | Book a room for student | `hall_id`, `matriculation_number` |
+| `/api/allocation/` | GET | Get allocation receipt | `matriculation_number` (query param) |
+| `/api/rooms/<room_id>/toggle-maintenance/` | PATCH | Toggle room maintenance status | `email` (query param), `room_id` (URL param) |
 
 ### Protected Endpoints (Requires Authentication)
 
+> **Note**: Currently, most endpoints use `AllowAny` permission for development. In production, these should require JWT authentication.
+
 | Endpoint | Method | Description | Headers Required |
 |----------|--------|-------------|------------------|
-| `/api/student/dashboard/` | GET | Get student dashboard | `Authorization: Bearer <token>` |
+| All endpoints | * | All endpoints (to be secured) | `Authorization: Bearer <token>` |
 
 ### Authentication Response Format
 
@@ -308,9 +376,8 @@ All API endpoints are prefixed with `/api/`:
 **Student Dashboard:**
 ```json
 // Request: GET /api/student/dashboard/?matriculation_number=CSC/2020/001
-// Header: Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGc...
 
-// Response:
+// Response (Student with room):
 {
   "profile": {
     "full_name": "John Doe",
@@ -322,7 +389,9 @@ All API endpoints are prefixed with `/api/`:
       "room_id": 1,
       "room_number": "A101",
       "capacity": 4,
-      "current_occupants": 2
+      "current_occupants": 2,
+      "room_status": "occupied",
+      "is_under_maintenance": false
     },
     "hall_details": {
       "hall_id": 1,
@@ -330,7 +399,139 @@ All API endpoints are prefixed with `/api/`:
       "gender": "Female"
     }
   },
-  "available_halls": []
+  "room_details": {
+    "hall_name": "Grace Hall",
+    "room_number": "A101"
+  }
+}
+
+// Response (Student without room but payment verified):
+{
+  "profile": {
+    "full_name": "Jane Smith",
+    "matriculation_number": "CSC/2020/002",
+    "level": "200",
+    "payment_status": "Verified",
+    "department": "Computer Science"
+  },
+  "available_halls": [
+    {
+      "hall_id": 1,
+      "hall_name": "Grace Hall",
+      "gender": "Female",
+      "total_rooms": 50,
+      "available_rooms": 10
+    }
+  ]
+}
+```
+
+**Admin Dashboard:**
+```json
+// Request: GET /api/admin/dashboard/?email=admin@example.com
+
+// Response:
+{
+  "name": "Admin Name",
+  "email": "admin@example.com",
+  "role": "Hall Admin",
+  "hall_details": {
+    "hall_name": "Grace Hall",
+    "gender": "Female",
+    "total_rooms": 50,
+    "available_rooms": 10,
+    "rooms_under_maintenance": 2,
+    "true_available_beds": 40,
+    "total_students_in_hall": 150,
+    "occupancy_rate": "75%",
+    "rooms": [
+      {
+        "room_id": 1,
+        "room_number": "A101",
+        "capacity": 4,
+        "current_occupants": 3,
+        "room_status": "occupied",
+        "is_under_maintenance": false,
+        "occupants_list": [
+          {
+            "matric_number": "CSC/2020/001",
+            "full_name": "John Doe",
+            "level": "300",
+            "phone_number": "08012345678",
+            "department": "Computer Science"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Room Booking:**
+```json
+// Request: POST /api/bookRoom/
+{
+  "hall_id": 1,
+  "matriculation_number": "CSC/2020/001"
+}
+
+// Response (Success):
+{
+  "message": "Room booked successfully",
+  "room number": "A101",
+  "hall name": "Grace Hall"
+}
+
+// Response (Error - Already has room):
+{
+  "error": "Student already has a room"
+}
+
+// Response (Error - Payment not verified):
+{
+  "error": "Payment not verified"
+}
+
+// Response (Error - Hall full):
+{
+  "error": "The hall is fully booked"
+}
+```
+
+**Allocation Receipt:**
+```json
+// Request: GET /api/allocation/?matriculation_number=CSC/2020/001
+
+// Response:
+{
+  "receipt_no": "BU-HAMS-1234",
+  "full_name": "John Doe",
+  "matric_no": "CSC/2020/001",
+  "department": "Computer Science",
+  "level": "300",
+  "hall_name": "Grace Hall",
+  "room_number": "A101",
+  "allocation_date": "2026-02-18T00:00:00Z",
+  "status": "active",
+  "house_address": "123 Main Street, Lagos",
+  "gender": "Male",
+  "phone_number": "08012345678",
+  "email": "john@example.com",
+  "transaction_reference": "TXN-20260218-ABC123",
+  "amount_paid": 50000.00
+}
+```
+
+**Toggle Room Maintenance:**
+```json
+// Request: PATCH /api/rooms/1/toggle-maintenance/?email=admin@example.com
+
+// Response:
+{
+  "message": "Room maintenance status toggled successfully",
+  "room_number": "A101",
+  "hall_name": "Grace Hall",
+  "is_under_maintenance": true
 }
 ```
 
@@ -528,6 +729,10 @@ If your frontend can't connect:
 6. ✅ Hash passwords (currently using plain text - **MUST FIX BEFORE PRODUCTION**)
 7. ✅ Add rate limiting for API endpoints
 8. ✅ Use environment-specific `.env` files for different environments
+9. ✅ Replace `AllowAny` permissions with proper JWT authentication
+10. ✅ Configure email settings with secure credentials (for production email notifications)
+11. ✅ Implement proper CORS policy (restrict allowed origins)
+12. ✅ Add input validation and sanitization for all endpoints
 
 ## 📝 Quick Start Checklist
 
