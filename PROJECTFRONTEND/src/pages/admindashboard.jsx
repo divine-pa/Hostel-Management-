@@ -7,7 +7,7 @@
 // - Room details with assigned students
 // - Search functionality to find specific rooms or students
 
-import { getAdminDashboard } from "../services/auth";
+import { getAdminDashboard, toggleRoomMaintenance } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -39,6 +39,9 @@ function AdminDashboard() {
 
     // filteredRooms: The list of rooms to display (changes when searching)
     const [filteredRooms, setFilteredRooms] = useState([]);
+
+    // togglingRoom: Tracks which room is currently being toggled (to show loading state)
+    const [togglingRoom, setTogglingRoom] = useState(null);
 
 
 
@@ -167,6 +170,38 @@ function AdminDashboard() {
 
         // Step 4: Update the display list with the search results
         setFilteredRooms(results);
+    }
+
+    // ===== TOGGLE MAINTENANCE FUNCTION =====
+    // This runs when admin clicks the maintenance toggle button
+    const handleToggleMaintenance = async (roomId) => {
+        try {
+            // Show loading state for this specific room
+            setTogglingRoom(roomId);
+
+            // Get the admin's email from localStorage for audit logging
+            const userString = localStorage.getItem('Admin');
+            const admin = JSON.parse(userString);
+            const adminEmail = admin.email;
+
+            // Call the service function to toggle maintenance status
+            const response = await toggleRoomMaintenance(roomId, adminEmail);
+
+            // Show success message
+            alert(`${response.message}\nRoom: ${response.room_number}\nMaintenance: ${response.is_under_maintenance ? 'ON' : 'OFF'}`);
+
+            // Refresh the dashboard to show updated status
+            await fetchDashboardData();
+
+        } catch (error) {
+            // If something went wrong, show error
+            console.error('Error toggling maintenance:', error);
+            const errorMsg = error.response?.data?.error || 'Failed to toggle maintenance status';
+            alert(`Error: ${errorMsg}`);
+        } finally {
+            // Remove loading state
+            setTogglingRoom(null);
+        }
     }
 
     return (
@@ -339,16 +374,48 @@ function AdminDashboard() {
                                             }}
                                         >
                                             {/* Room header: room number and status */}
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
                                                 {/* Room number */}
                                                 <h4 style={{ fontSize: 'var(--font-size-xl)', margin: 0 }}>
                                                     Room {room.room_number}
                                                 </h4>
 
-                                                {/* Status badge (green if available, red if full) */}
-                                                <span className={room.room_status === 'Available' ? 'badge badge-success' : 'badge badge-error'}>
-                                                    {room.room_status}
-                                                </span>
+                                                <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+                                                    {/* Maintenance status badge (orange if under maintenance) */}
+                                                    {room.is_under_maintenance && (
+                                                        <span className="badge" style={{ background: '#f59e0b', color: 'white' }}>
+                                                            🔧 Under Maintenance
+                                                        </span>
+                                                    )}
+
+                                                    {/* Status badge (green if available, red if full) */}
+                                                    <span className={room.room_status === 'Available' ? 'badge badge-success' : 'badge badge-error'}>
+                                                        {room.room_status}
+                                                    </span>
+
+                                                    {/* Toggle Maintenance Button */}
+                                                    <button
+                                                        onClick={() => handleToggleMaintenance(room.room_id)}
+                                                        disabled={togglingRoom === room.room_id}
+                                                        className="btn btn-sm"
+                                                        style={{
+                                                            background: room.is_under_maintenance ? '#10b981' : '#f59e0b',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            padding: '6px 12px',
+                                                            fontSize: 'var(--font-size-sm)',
+                                                            cursor: togglingRoom === room.room_id ? 'not-allowed' : 'pointer',
+                                                            opacity: togglingRoom === room.room_id ? 0.6 : 1,
+                                                        }}
+                                                    >
+                                                        {togglingRoom === room.room_id
+                                                            ? '⏳ Loading...'
+                                                            : room.is_under_maintenance
+                                                                ? '✓ End Maintenance'
+                                                                : '🔧 Start Maintenance'
+                                                        }
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             {/* ===== PROGRESS BAR ===== */}

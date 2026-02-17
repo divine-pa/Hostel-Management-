@@ -175,3 +175,24 @@ export const RecipetData = async (matriculation_number) => {
         throw error;
     }
 }
+
+// ==================================================
+// TOGGLE ROOM MAINTENANCE - Toggles maintenance status for a room
+// ==================================================
+// This function toggles the maintenance status of a room
+// Parameters: roomId (which room), adminEmail (which admin is making the change)
+export const toggleRoomMaintenance = async (roomId, adminEmail) => {
+    try {
+        // Send PATCH request to toggle the room's maintenance status
+        const response = await axios.patch(
+            `${API_URL}rooms/${roomId}/toggle-maintenance/?email=${adminEmail}`
+        );
+
+        // Return the server's response (success message and new status)
+        return response.data;
+
+    } catch (error) {
+        // If something went wrong, throw the error
+        throw error;
+    }
+}
