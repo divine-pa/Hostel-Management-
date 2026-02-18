@@ -103,7 +103,7 @@ function AdminDashboard() {
         fetchDashboardData()
     }, [navigate])  // Run this when the page loads
 
-    // ===== FETCH GRAPH DATA ON LOAD + REFRESH EVERY 30 SECONDS =====
+    // ===== FETCH GRAPH DATA ON LOAD + REFRESH EVERY 60 SECONDS =====
     // Separate from the 10s room refresh — graph shows daily trends so 30s is enough
     useEffect(() => {
         const fetchGraphData = async () => {
