@@ -470,17 +470,6 @@ function AdminDashboard() {
                                                 </div>
                                             </div>
 
-                                            {/* ===== VIEW STUDENTS BUTTON ===== */}
-                                            {/* Takes the admin to a page showing all students in this room */}
-                                            {room.occupants_list && room.occupants_list.length > 0 && (
-                                                <button
-                                                    className="btn btn-primary btn-sm"
-                                                    onClick={() => navigate('/displaystudent', { state: { room: room } })}
-                                                    style={{ width: '100%' }}
-                                                >
-                                                    👥 View Students ({room.occupants_list.length})
-                                                </button>
-                                            )}
 
                                         </div>
                                     ))}
