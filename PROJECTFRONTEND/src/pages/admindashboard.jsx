@@ -80,15 +80,7 @@ function AdminDashboard() {
                 setFilteredRooms(data.hall_details.rooms || []);  // Display list (changes when searching)
             }
 
-            // Step 6: Fetch allocation graph data for the chart
-            try {
-                const graphData = await allocationGraph();
-                setChartData(graphData);
-            } catch (graphError) {
-                console.error("Graph data fetch error:", graphError);
-            }
-
-            // Step 7: Stop showing "loading" (only on first load)
+            // Step 6: Stop showing "loading" (only on first load)
             setLoading(false)
 
         } catch (error) {
@@ -110,6 +102,23 @@ function AdminDashboard() {
         // Call the fetch function on initial load
         fetchDashboardData()
     }, [navigate])  // Run this when the page loads
+
+    // ===== FETCH GRAPH DATA ON LOAD + REFRESH EVERY 30 SECONDS =====
+    // Separate from the 10s room refresh — graph shows daily trends so 30s is enough
+    useEffect(() => {
+        const fetchGraphData = async () => {
+            try {
+                const graphData = await allocationGraph();
+                setChartData(graphData);
+            } catch (graphError) {
+                console.error("Graph data fetch error:", graphError);
+            }
+        };
+        fetchGraphData();  // Fetch immediately on load
+
+        const graphInterval = setInterval(fetchGraphData, 60000);  // Then every 30 seconds
+        return () => clearInterval(graphInterval);  // Cleanup on unmount
+    }, [])  // Empty array = only sets up once
 
     // ===== AUTO-REFRESH EVERY 10 SECONDS =====
     // This makes the dashboard update automatically to show live changes

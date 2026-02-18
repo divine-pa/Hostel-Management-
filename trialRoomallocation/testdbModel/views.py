@@ -308,7 +308,18 @@ def book_room(request):
             
             # Add 1 to the number of students in this room
             room.current_occupants += 1
+
+            # Fix #5: Update room status if room is now full
+            if room.current_occupants >= room.capacity:
+                room.room_status = 'Full'
+
             room.save()  # Save the change to the database
+
+            # Fix #4: Update hall available_rooms count if this room just became full
+            if room.current_occupants >= room.capacity:
+                hall = room.hall
+                hall.available_rooms = max(0, hall.available_rooms - 1)
+                hall.save()
             
             # Assign the room and hall to the student
             student.room = room
@@ -348,12 +359,16 @@ def book_room(request):
 
 
             # send email to student
+            # Fix #6: Wrapped in try/except so email failure doesn't crash the booking
             if allocation:
-                send_allocation_email(
-                    student_email=student.email,
-                    student_name=student.full_name,
-                    room_details=f"{room.hall.hall_name} - Room {room.room_number}"
-                )
+                try:
+                    send_allocation_email(
+                        student_email=student.email,
+                        student_name=student.full_name,
+                        room_details=f"{room.hall.hall_name} - Room {room.room_number}"
+                    )
+                except Exception as email_error:
+                    print(f"Email notification failed (booking still succeeded): {email_error}")
            
             # Step 8: Send back a success message!
             return Response({

@@ -49,7 +49,7 @@ function App() {
         <Route path="/landingpage" element={<LandingPage />} />
 
         {/* When URL is "/reciept", show the receipt page */}
-        <Route path="/reciept" element={<ReceiptPage />} />
+        <Route path="/reciept" element={<ProtectedRoute><ReceiptPage /></ProtectedRoute>} />
 
         {/* ===== PROTECTED ROUTES ===== */}
         {/* These pages can ONLY be accessed after logging in */}
