@@ -305,6 +305,46 @@ Quit the server with CTRL-BREAK.
 
 ✅ **Your backend is now running!**
 
+## 🖥️ Frontend Setup (React 18)
+
+The frontend uses **React 18** with **Vite 5**. If you've just cloned the repo and the default packages are newer, you'll need to downgrade to ensure compatibility.
+
+### Step 1: Navigate to the Frontend Directory
+
+```bash
+cd PROJECTFRONTEND
+```
+
+### Step 2: Install Dependencies
+
+```bash
+npm install
+```
+
+### Step 3: Downgrade to React 18
+
+The project requires React 18. Run the following commands to downgrade React, Vite, and the Vite React plugin:
+
+```bash
+# Downgrade React and React DOM to version 18
+npm install react@18 react-dom@18
+
+# Downgrade Vite and the React plugin to compatible versions
+npm install vite@5 @vitejs/plugin-react@4
+```
+
+> ⚠️ **IMPORTANT**: If you skip this step, you will get the error:  
+> `Error: Missing "./compiler-runtime" specifier in "react" package`  
+> This happens because newer versions of Vite and its React plugin expect React 19.
+
+### Step 4: Start the Frontend Dev Server
+
+```bash
+npm run dev
+```
+
+The frontend should now be running at `http://localhost:5173/`.
+
 ### Step 3: Verify It's Working
 
 Open your browser and go to:

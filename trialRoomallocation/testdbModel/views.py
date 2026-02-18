@@ -17,7 +17,7 @@ from .serializers import StudentSerializer, AdminSerializer, HallSerializer, Pay
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from django.db import transaction
-from django.db.models import F
+from django.db.models.functions import TruncDay
 from .models import Allocation, Room
 from django.utils import timezone
 from .utils import send_allocation_email,generate_transaction_id
@@ -342,7 +342,8 @@ def book_room(request):
                 room=room,
                 receipt=new_receipt,
                 allocation_date=timezone.now(),  # Current date and time
-                status='active'  # The allocation is active
+                status='active', # The allocation is active
+                created_at = timezone.now(),
             )
 
 
@@ -488,3 +489,21 @@ def toggle_maintenance(request, room_id):
             "error": "Failed to toggle room maintenance status",
             "details": str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+#allocation graph
+@api_view(['GET'])
+def allocation_graph(request):
+   data = (
+    Allocation.objects.filter(allocation_date__isnull=False).annotate(day=TruncDay('allocation_date')).values('day').annotate(count=Count('allocation_id')).order_by('day')
+   )
+
+   # Formatting for the frontend (e.g., {"day": "Feb 10", "count": 15}
+
+   chart_data = [
+    {"day": item['day'].strftime('%b %d'), "count": item['count']} for item in data
+   ]
+
+   return Response(chart_data)

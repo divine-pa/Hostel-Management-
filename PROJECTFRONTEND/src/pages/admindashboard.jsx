@@ -7,9 +7,10 @@
 // - Room details with assigned students
 // - Search functionality to find specific rooms or students
 
-import { getAdminDashboard, toggleRoomMaintenance } from "../services/auth";
+import { getAdminDashboard, toggleRoomMaintenance, allocationGraph } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AllocationTrend from "./Charts";
 
 // ==================================================
 // ADMIN DASHBOARD COMPONENT
@@ -42,6 +43,9 @@ function AdminDashboard() {
 
     // togglingRoom: Tracks which room is currently being toggled (to show loading state)
     const [togglingRoom, setTogglingRoom] = useState(null);
+
+    // chartData: Holds the allocation trend data for the chart
+    const [chartData, setChartData] = useState([]);
 
 
 
@@ -76,7 +80,15 @@ function AdminDashboard() {
                 setFilteredRooms(data.hall_details.rooms || []);  // Display list (changes when searching)
             }
 
-            // Step 6: Stop showing "loading" (only on first load)
+            // Step 6: Fetch allocation graph data for the chart
+            try {
+                const graphData = await allocationGraph();
+                setChartData(graphData);
+            } catch (graphError) {
+                console.error("Graph data fetch error:", graphError);
+            }
+
+            // Step 7: Stop showing "loading" (only on first load)
             setLoading(false)
 
         } catch (error) {
@@ -313,6 +325,9 @@ function AdminDashboard() {
                                 </div>
 
                             </div>
+                        </div>
+                        <div>
+                            <AllocationTrend data={chartData} />
                         </div>
 
                         {/* ===== SEARCH BAR ===== */}

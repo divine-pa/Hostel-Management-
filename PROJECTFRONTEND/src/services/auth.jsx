@@ -176,6 +176,20 @@ export const RecipetData = async (matriculation_number) => {
     }
 }
 
+//allocation graph
+export const allocationGraph = async () => {
+    try {
+        const response = await axios.get(API_URL + 'allocation-graph/');
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+
+
+
 // ==================================================
 // TOGGLE ROOM MAINTENANCE - Toggles maintenance status for a room
 // ==================================================
