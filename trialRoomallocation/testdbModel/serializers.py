@@ -86,7 +86,14 @@ class RoomSerializer(serializers.ModelSerializer):
         model = Room  # Get data from the Room table
         fields = '__all__'  # Send ALL room information
 
-
+# ==================================================
+# STUDENT ROOM SERIALIZER - Room info for students (no occupant names)
+# ==================================================
+# Shows room availability without revealing who is in each room
+class StudentRoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['room_id', 'room_number', 'capacity', 'current_occupants', 'room_status']
 
         
 # ==================================================
@@ -236,6 +243,8 @@ class AdminDashboardSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.Serializer):
     # hall_id: Which hall does the student want to book in?
     hall_id = serializers.IntegerField()
+    # room_id: Which specific room the student selected
+    room_id = serializers.IntegerField()
     # matriculation_number: Which student is making the booking?
     matriculation_number = serializers.CharField()
     

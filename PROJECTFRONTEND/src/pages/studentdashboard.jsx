@@ -11,7 +11,7 @@
 import { getStudentDashboard } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { bookRoom } from "../services/auth";
+import { bookRoom, getAvailableRooms } from "../services/auth";
 
 // ==================================================
 // STUDENT DASHBOARD COMPONENT
@@ -28,6 +28,18 @@ function StudentDashboard() {
 
     // error: Holds any error messages if something goes wrong
     const [error, setError] = useState(null);
+
+    // selectedHall: Which hall the student clicked on (null = showing hall list)
+    const [selectedHall, setSelectedHall] = useState(null);
+
+    // rooms: Available rooms for the selected hall
+    const [rooms, setRooms] = useState([]);
+
+    // roomsLoading: Whether we're fetching rooms
+    const [roomsLoading, setRoomsLoading] = useState(false);
+
+    // selectedBlock: Which block tab is active (e.g. "A", "B", "C")
+    const [selectedBlock, setSelectedBlock] = useState(null);
 
     // navigate: A tool to move between different pages
     const navigate = useNavigate();
@@ -103,12 +115,29 @@ function StudentDashboard() {
     const { room_details } = profile;
 
 
+    // ===== HANDLE SELECTING A HALL =====
+    // When a student clicks "Select" on a hall, fetch its available rooms
+    const handleSelectHall = async (hall) => {
+        try {
+            setRoomsLoading(true)
+            setSelectedHall(hall)
+            const roomData = await getAvailableRooms(hall.hall_id)
+            setRooms(roomData)
+        } catch (error) {
+            console.error("Error fetching rooms:", error)
+            alert("Failed to load rooms. Please try again.")
+            setSelectedHall(null)
+        } finally {
+            setRoomsLoading(false)
+        }
+    }
+
     // ===== HANDLE ROOM BOOKING =====
-    // This function runs when a student clicks "Select" on a hall
-    const handleBooking = async (hall_id, hallName) => {
-        // Step 1: Ask for confirmation (to prevent accidental clicks)
-        if (!window.confirm(`Are you sure you want to book ${hallName}`)) {
-            return  // If they click "Cancel", stop here
+    // This function runs when a student clicks "Book" on a specific room
+    const handleBooking = async (hall_id, room_id, roomNumber) => {
+        // Step 1: Ask for confirmation
+        if (!window.confirm(`Are you sure you want to book Room ${roomNumber} in ${selectedHall.hall_name}?`)) {
+            return
         }
 
         try {
@@ -119,23 +148,23 @@ function StudentDashboard() {
             const user = JSON.parse(localStorage.getItem("user"))
             const matricparm = user.matriculation_number || user.matric_number
 
-            // Step 4: Send the booking request to the server
-            await bookRoom(matricparm, hall_id);
+            // Step 4: Send the booking request with the specific room
+            await bookRoom(matricparm, hall_id, room_id);
 
             // Step 5: Show success message
             alert("Room Booked Successfully")
 
-            // Step 6: REFRESH THE DASHBOARD to show the new room
+            // Step 6: Clear selection and refresh dashboard
+            setSelectedHall(null)
+            setRooms([])
             const updateData = await getStudentDashboard(matricparm);
             setDashboardData(updateData);
 
         } catch (error) {
-            // If booking failed, show error message
             console.error(error)
             alert(error.response?.data?.error || "Failed to book room")
         }
         finally {
-            // Step 7: Stop showing loading (whether it succeeded or failed)
             setLoading(false)
         }
     }
@@ -252,70 +281,160 @@ function StudentDashboard() {
                             </div>
                         )
 
-                            /* SCENARIO C: Payment verified but NO room yet (Show available halls) */
+                            /* SCENARIO C: Payment verified but NO room yet */
                             : (
                                 <div>
-                                    {/* Header: "Select a Hall" */}
-                                    <h2 style={{ color: 'var(--color-primary)', marginBottom: 'var(--spacing-lg)' }}>
-                                        Select a Hall
-                                    </h2>
+                                    {/* If no hall is selected yet, show the hall list */}
+                                    {!selectedHall ? (
+                                        <>
+                                            {/* Header: "Select a Hall" */}
+                                            <h2 style={{ color: 'var(--color-primary)', marginBottom: 'var(--spacing-lg)' }}>
+                                                Select a Hall
+                                            </h2>
 
-                                    {/* Check if there are any halls available */}
-                                    {available_halls.length === 0 ? (
-                                        // No halls available
-                                        <p className="text-error">No halls are currently available for your gender.</p>
-                                    ) : (
-                                        // Show the list of available halls
-                                        <div className="grid grid-2">
-                                            {/* Loop through each available hall */}
-                                            {available_halls.map((hall) => (
-                                                <div
-                                                    key={hall.hall_id}
-                                                    style={{
-                                                        border: '2px solid var(--color-border)',
-                                                        borderRadius: 'var(--radius-lg)',
-                                                        padding: 'var(--spacing-lg)',
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        alignItems: 'center',
-                                                        transition: 'all var(--transition-base)',
-                                                        cursor: 'pointer'
-                                                    }}
-
-                                                    // HOVER EFFECT: When mouse hovers over, add shadow
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.boxShadow = 'none';
-                                                        e.currentTarget.style.transform = 'translateY(0)';
-                                                    }}
-                                                >
-                                                    {/* Hall information */}
-                                                    <div>
-                                                        {/* Hall name */}
-                                                        <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
-                                                            {hall.hall_name}
-                                                        </h3>
-
-                                                        {/* How many rooms are left */}
-                                                        <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)', marginBottom: '0' }}>
-                                                            {hall.available_rooms} rooms left
-                                                        </p>
-                                                    </div>
-
-                                                    {/* SELECT BUTTON */}
-                                                    {/* When clicked, book this hall */}
-                                                    <button
-                                                        className="btn btn-primary"
-                                                        onClick={() => handleBooking(hall.hall_id, hall.hall_name)}
-                                                    >
-                                                        Select
-                                                    </button>
+                                            {/* Check if there are any halls available */}
+                                            {available_halls.length === 0 ? (
+                                                <p className="text-error">No halls are currently available for your gender.</p>
+                                            ) : (
+                                                <div className="grid grid-2">
+                                                    {available_halls.map((hall) => (
+                                                        <div
+                                                            key={hall.hall_id}
+                                                            style={{
+                                                                border: '2px solid var(--color-border)',
+                                                                borderRadius: 'var(--radius-lg)',
+                                                                padding: 'var(--spacing-lg)',
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                transition: 'all var(--transition-base)',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                e.currentTarget.style.boxShadow = 'none';
+                                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                            }}
+                                                        >
+                                                            <div>
+                                                                <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
+                                                                    {hall.hall_name}
+                                                                </h3>
+                                                                <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)', marginBottom: '0' }}>
+                                                                    {hall.available_rooms} rooms left
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                onClick={() => handleSelectHall(hall)}
+                                                            >
+                                                                Select
+                                                            </button>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            ))}
-                                        </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        /* Hall is selected — show the room picker */
+                                        <>
+                                            {/* Header with back button */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-lg)' }}>
+                                                <button
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={() => { setSelectedHall(null); setRooms([]); setSelectedBlock(null); }}
+                                                >
+                                                    ← Back to Halls
+                                                </button>
+                                                <h2 style={{ color: 'var(--color-primary)', marginBottom: '0' }}>
+                                                    {selectedHall.hall_name} — Pick a Room
+                                                </h2>
+                                            </div>
+
+                                            {roomsLoading ? (
+                                                <div className="loading-container">Loading rooms...</div>
+                                            ) : rooms.length === 0 ? (
+                                                <p className="text-error">No available rooms in this hall right now.</p>
+                                            ) : (() => {
+                                                // Group rooms by block letter (first character of room_number)
+                                                const blocks = {};
+                                                rooms.forEach((room) => {
+                                                    const blockLetter = room.room_number.charAt(0).toUpperCase();
+                                                    if (!blocks[blockLetter]) blocks[blockLetter] = [];
+                                                    blocks[blockLetter].push(room);
+                                                });
+                                                const blockKeys = Object.keys(blocks).sort();
+                                                const activeBlock = selectedBlock && blocks[selectedBlock] ? selectedBlock : blockKeys[0];
+
+                                                return (
+                                                    <div>
+                                                        {/* Block tabs */}
+                                                        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)', flexWrap: 'wrap' }}>
+                                                            {blockKeys.map((block) => (
+                                                                <button
+                                                                    key={block}
+                                                                    className={`btn ${activeBlock === block ? 'btn-primary' : 'btn-secondary'}`}
+                                                                    onClick={() => setSelectedBlock(block)}
+                                                                    style={{ minWidth: '80px' }}
+                                                                >
+                                                                    {block} Block
+                                                                    <span style={{ fontSize: 'var(--font-size-xs)', marginLeft: '4px', opacity: 0.7 }}>
+                                                                        ({blocks[block].length})
+                                                                    </span>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Rooms for the active block */}
+                                                        <div className="grid grid-2" style={{ gap: 'var(--spacing-md)' }}>
+                                                            {blocks[activeBlock].map((room) => (
+                                                                <div
+                                                                    key={room.room_id}
+                                                                    style={{
+                                                                        border: '2px solid var(--color-border)',
+                                                                        borderRadius: 'var(--radius-lg)',
+                                                                        padding: 'var(--spacing-lg)',
+                                                                        display: 'flex',
+                                                                        justifyContent: 'space-between',
+                                                                        alignItems: 'center',
+                                                                        transition: 'all var(--transition-base)',
+                                                                    }}
+                                                                    onMouseEnter={(e) => {
+                                                                        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                                                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                                                    }}
+                                                                    onMouseLeave={(e) => {
+                                                                        e.currentTarget.style.boxShadow = 'none';
+                                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                                    }}
+                                                                >
+                                                                    {/* Room info */}
+                                                                    <div>
+                                                                        <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
+                                                                            Room {room.room_number}
+                                                                        </h3>
+                                                                        <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)', marginBottom: '0' }}>
+                                                                            {room.current_occupants}/{room.capacity} beds taken
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {/* Book button */}
+                                                                    <button
+                                                                        className="btn btn-primary"
+                                                                        onClick={() => handleBooking(selectedHall.hall_id, room.room_id, room.room_number)}
+                                                                    >
+                                                                        Book
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </>
                                     )}
                                 </div>
                             )}

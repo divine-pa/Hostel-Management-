@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Student, Admin, Hall, Payment, Receipt, Log
-from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer,BookingSerializer,AllocationSerializer
+from .serializers import StudentSerializer, AdminSerializer, HallSerializer, PaymentSerializer, LoginSerializer, AdminLoginSerializer, StudentDashboardSerializer, AdminDashboardSerializer,BookingSerializer,AllocationSerializer,StudentRoomSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from django.db import transaction
@@ -267,8 +267,9 @@ def book_room(request):
     serializer = BookingSerializer(data=request.data)
     
     if serializer.is_valid():  # If format is correct
-       # Get the hall_id and matric number from the request
+       # Get the hall_id, room_id, and matric number from the request
        hall_id = serializer.validated_data['hall_id']
+       room_id = serializer.validated_data['room_id']
        matric = serializer.validated_data['matriculation_number']
 
 
@@ -291,18 +292,21 @@ def book_room(request):
             if student.payment_status != "Verified":
                 return Response({"error": "Payment not verified"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Step 5: Find an available room using our SEQUENTIAL ALGORITHM
-            # This means: give them the first available room in order (like Room 101, then 102, etc.)
-            room = Room.objects.select_for_update().filter(
-                hall_id=hall_id,  # In the hall they selected
-                current_occupants__lt=F('capacity'),  # Room is not full yet
-                is_under_maintenance=False  # Room is not being repaired
-            ).order_by('room_number').first()  # Get the first room in numerical order
+            # Step 5: Get the specific room the student selected
+            # Lock it for update to prevent race conditions
+            try:
+                room = Room.objects.select_for_update().get(
+                    room_id=room_id,
+                    hall_id=hall_id,  # Must be in the correct hall
+                )
+            except Room.DoesNotExist:
+                return Response({"error": "Room not found in this hall"}, status=status.HTTP_404_NOT_FOUND)
             
-            # Step 6: Check if we found an available room
-            if not room:
-                # No rooms available - hall is full!
-                return Response({"error": "The hall is fully booked"}, status=status.HTTP_400_BAD_REQUEST)
+            # Step 6: Validate the room is still available
+            if room.current_occupants >= room.capacity:
+                return Response({"error": "This room is already full"}, status=status.HTTP_400_BAD_REQUEST)
+            if room.is_under_maintenance:
+                return Response({"error": "This room is under maintenance"}, status=status.HTTP_400_BAD_REQUEST)
             
             # Step 7: EXECUTE THE BOOKING!
             
@@ -387,9 +391,31 @@ def book_room(request):
            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # If the booking data format was wrong
+    print(f"BookingSerializer errors: {serializer.errors}")  # Debug line
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
            
+
+
+# ==================================================
+# AVAILABLE ROOMS - Returns rooms a student can pick from
+# ==================================================
+# Students see room numbers and bed availability, but NOT who is in each room
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def available_rooms(request):
+    hall_id = request.query_params.get('hall_id')
+    if not hall_id:
+        return Response({"error": "hall_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get rooms that are not full and not under maintenance
+    rooms = Room.objects.filter(
+        hall_id=hall_id,
+        current_occupants__lt=F('capacity'),
+        is_under_maintenance=False
+    ).order_by('room_number')
+    
+    return Response(StudentRoomSerializer(rooms, many=True).data)
 
     
 # ==================================================
