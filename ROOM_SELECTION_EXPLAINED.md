@@ -315,7 +315,7 @@ blocks["B"].push(room);   // Add room: blocks = { "B": [B101] }
 If user hasn't clicked anything → `activeBlock = "A"` (first one).
 
 ### Syntax explained:
-
+/
 | Code | What it does |
 |------|-------------|
 | `room.room_number.charAt(0)` | Gets the first character of the string |
