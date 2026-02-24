@@ -133,14 +133,15 @@ export const Adminlogout = () => {
 // ==================================================
 // BOOK ROOM FUNCTION
 // ==================================================
-// This function sends a request to book a room for a student
-// Parameters: matriculation_number (which student), hall_id (which hall they want)
-export const bookRoom = async (matriculation_number, hall_id) => {
+// This function sends a request to book a specific room for a student
+// Parameters: matriculation_number (which student), hall_id (which hall), room_id (which room)
+export const bookRoom = async (matriculation_number, hall_id, room_id) => {
     try {
         // Step 1: Send the booking request to the server
         const response = await axios.post(API_URL + 'bookRoom/', {
             matriculation_number: matriculation_number,
-            hall_id: hall_id
+            hall_id: hall_id,
+            room_id: room_id
         });
 
         // Step 2: Return the server's response (success or error message)
@@ -148,6 +149,21 @@ export const bookRoom = async (matriculation_number, hall_id) => {
 
     } catch (error) {
         // If something went wrong, throw the error
+        throw error;
+    }
+}
+
+// ==================================================
+// GET AVAILABLE ROOMS FUNCTION
+// ==================================================
+// This function fetches available rooms for a specific hall
+// Students see room numbers and bed counts, but NOT who is in each room
+// Parameter: hall_id (which hall to get rooms for)
+export const getAvailableRooms = async (hall_id) => {
+    try {
+        const response = await axios.get(`${API_URL}available-rooms/?hall_id=${hall_id}`);
+        return response.data;
+    } catch (error) {
         throw error;
     }
 }
