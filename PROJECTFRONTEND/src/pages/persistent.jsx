@@ -15,7 +15,7 @@ function Persistence() {
 
     return (
         <div className="persist-page">
-            <h1 className="persist-title">Saved Room Data</h1>
+            <h1 className="persist-title">Offline Room Data</h1>
             <div className="room-list">
                 {result.map(room => (
                     <div key={room.room_number}>

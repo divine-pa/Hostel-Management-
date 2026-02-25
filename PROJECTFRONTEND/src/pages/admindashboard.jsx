@@ -11,7 +11,7 @@ import { getAdminDashboard, toggleRoomMaintenance, allocationGraph } from "../se
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AllocationTrend from "./Charts";
-
+import { Link } from "react-router-dom"
 // ==================================================
 // ADMIN DASHBOARD COMPONENT
 // ==================================================
@@ -126,7 +126,7 @@ function AdminDashboard() {
         });
 
         setRooms(updatedRooms);
-        
+
     };
     // ===== FETCH GRAPH DATA ON LOAD + REFRESH EVERY 60 SECONDS =====
     // Separate from the 10s room refresh — graph shows daily trends so 30s is enough
@@ -389,6 +389,9 @@ function AdminDashboard() {
                                 }}
                             />
                         </div>
+
+                        {/** offline data button (persistent data) */}
+                        <Link to="/persistent" className="btn btn-primary">offline data</Link>
 
                         {/* ===== ROOMS SECTION ===== */}
                         {/* This shows the list of rooms (filtered by search) */}

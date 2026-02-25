@@ -53,12 +53,12 @@
 }
 
 .room-badge {
-    width: 46px;
-    height: 46px;
+    width: 50px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 5px;
     background: #eff6ff;
     color: #3b82f6;
     font-weight: 700;
@@ -90,7 +90,7 @@
     font-size: 0.72rem;
     font-weight: 600;
     padding: 0.15rem 0.5rem;
-    border-radius: 12px;
+    border-radius: 5px;
     text-transform: capitalize;
     width: fit-content;
 }
@@ -131,7 +131,7 @@
 }
 
 .resident:hover {
-    background: #f8fafc;
+    background: #edf4fb;
 }
 
 .res-name {
