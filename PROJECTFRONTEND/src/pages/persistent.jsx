@@ -1,37 +1,58 @@
-function Persistent() {
-    const savedData = localStorage.getItem('hostel_rooms_data');
-    const rooms = savedData ? JSON.parse(savedData) : [];
-    
-    return (
-        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-            <h1>Room Persistence Test</h1>
-            
-            {rooms.length > 0 ? (
-                rooms.map((room) => (
-                    <div key={room.room_id} style={{ border: '1px solid #6F55E3', borderRadius: '10px', margin: '10px 0', padding: '15px' }}>
-                        {/* 1. Use 'room_number' instead of 'room_name' to match your JSON */}
-                        <h3>Room: {room.room_number}</h3>
-                        <p>Status: <strong>{room.room_status}</strong></p>
-                        <p>Capacity: {room.current_occupants} / {room.capacity}</p>
+import './persistent.css'
 
-                        <div style={{ background: '#f9f9fb', padding: '10px', borderRadius: '5px' }}>
-                            <h4>Residents:</h4>
-                            {/* 2. Logic: occupants_list is an array, so we map it! */}
-                            {room.occupants_list && room.occupants_list.length > 0 ? (
-                                room.occupants_list.map((student, sIndex) => (
-                                    <p key={sIndex} style={{ margin: '5px 0', fontSize: '14px' }}>
-                                        👤 {student.full_name} ({student.matric_number}) - {student.department}
-                                    </p>
-                                ))
-                            ) : (
-                                <p style={{ color: '#999' }}>No residents yet.</p>
-                            )}
-                        </div>
+function Persistence() {
+    const data = localStorage.getItem("hostel_rooms_data")
+    const result = JSON.parse(data)
+
+    if (!result || !Array.isArray(result)) {
+        return (
+            <div className="persist-page">
+                <h1 className="persist-title">Saved Room Data</h1>
+                <p className="no-data">No saved room data found.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="persist-page">
+            <h1 className="persist-title">Saved Room Data</h1>
+            <div className="room-list">
+                {result.map(room => (
+                    <div key={room.room_number}>
+                        {room.occupants_list && room.occupants_list.length > 0 && (
+                            <div className="room-row">
+                                <div className="room-top">
+                                    <div className="room-badge">{room.room_number}</div>
+                                    <div className="room-info">
+                                        <span className="room-label">Occupancy</span>
+                                        <span className="room-value">{room.current_occupants} / {room.capacity}</span>
+                                    </div>
+                                    <div className="room-info">
+                                        <span className="room-label">Status</span>
+                                        <span className={`room-status-pill ${room.room_status === 'available' ? 'pill-open' : 'pill-full'}`}>
+                                            {room.room_status}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="room-residents">
+                                    <span className="residents-heading">Residents</span>
+                                    {room.occupants_list.map(student => (
+                                        <div className="resident" key={student.matric_number}>
+                                            <span className="res-name">{student.full_name}</span>
+                                            <span className="res-detail">{student.matric_number}</span>
+                                            <span className="res-detail">{student.department}</span>
+                                            <span className="res-detail">Lvl {student.level}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                ))
-            ) : (
-                <p>No data found in storage. Try picking a room first!</p>
-            )}
+                ))}
+            </div>
         </div>
-    );
+    )
 }
+
+export default Persistence

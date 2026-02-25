@@ -1,0 +1,164 @@
+/* ========== Page ========== */
+.persist-page {
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.persist-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid #3b82f6;
+}
+
+.no-data {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 3rem;
+}
+
+/* ========== Room List ========== */
+.room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ========== Room Row ========== */
+.room-row {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.room-row:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    border-color: #cbd5e1;
+}
+
+/* ========== Top section: room info ========== */
+.room-top {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.room-badge {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #3b82f6;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.room-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.room-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+.room-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+/* ========== Status pill ========== */
+.room-status-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 12px;
+    text-transform: capitalize;
+    width: fit-content;
+}
+
+.pill-open {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.pill-full {
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+/* ========== Bottom section: residents ========== */
+.room-residents {
+    padding-top: 0.65rem;
+}
+
+.residents-heading {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    margin-bottom: 0.4rem;
+    text-align: left;
+}
+
+.resident {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 0.9rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.resident:hover {
+    background: #f8fafc;
+}
+
+.res-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 140px;
+}
+
+.res-detail {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 600px) {
+    .room-top {
+        flex-wrap: wrap;
+    }
+
+    .resident {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .res-name {
+        min-width: unset;
+        width: 100%;
+    }
+}
