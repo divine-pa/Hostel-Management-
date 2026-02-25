@@ -47,6 +47,8 @@ function AdminDashboard() {
     // chartData: Holds the allocation trend data for the chart
     const [chartData, setChartData] = useState([]);
 
+    //
+
 
 
     // ===== FUNCTION TO FETCH DASHBOARD DATA =====
@@ -54,7 +56,7 @@ function AdminDashboard() {
     // We extracted it so we can call it both on initial load AND for auto-refresh
     const fetchDashboardData = async () => {
         try {
-            // Step 1: Check if the admin is logged in
+            //  Check if the admin is logged in
             const userString = localStorage.getItem('Admin')
 
             // If no login info found, send them to login page
@@ -63,21 +65,22 @@ function AdminDashboard() {
                 return
             }
 
-            // Step 2: Get the admin's login info from storage
+            //  Get the admin's login info from storage
             const admin = JSON.parse(userString)
 
-            // Step 3: Get the admin's email
+            //  Get the admin's email
             const adminparm = admin.email
 
-            // Step 4: Fetch the dashboard data from the server
+            //  Fetch the dashboard data from the server
             const data = await getAdminDashboard(adminparm);
             setDashboardData(data);
 
-            // Step 5: Initialize the search functionality
+            //  Initialize the search functionality
             // Save the hall data for searching
             if (data.hall_details) {
                 setHallData(data.hall_details);  // Master data (never changes)
                 setFilteredRooms(data.hall_details.rooms || []);  // Display list (changes when searching)
+                setRooms(data.hall_details.rooms || []);  // Cache rooms for localStorage persistence
             }
 
             // Step 6: Stop showing "loading" (only on first load)
@@ -103,6 +106,28 @@ function AdminDashboard() {
         fetchDashboardData()
     }, [navigate])  // Run this when the page loads
 
+    const [rooms, setRooms] = useState(() => {
+        const savedRoom = localStorage.getItem("hostel_rooms_data");
+        return savedRoom ? JSON.parse(savedRoom) : []
+    })
+
+    useEffect(() => {
+        if (hallData && hallData.rooms && hallData.rooms.length > 0) {
+            localStorage.setItem('hostel_rooms_data', JSON.stringify(rooms))
+        }
+    }, [rooms])
+
+    const handlePickRoom = (roomId) => {
+        const updatedRooms = rooms.map(room => {
+            if (room.id === roomId) {
+                return { ...room, current_occupants: room.current_occupants + 1 };
+            }
+            return room;
+        });
+
+        setRooms(updatedRooms);
+        
+    };
     // ===== FETCH GRAPH DATA ON LOAD + REFRESH EVERY 60 SECONDS =====
     // Separate from the 10s room refresh — graph shows daily trends so 30s is enough
     useEffect(() => {

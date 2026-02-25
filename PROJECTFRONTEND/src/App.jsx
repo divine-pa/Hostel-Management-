@@ -22,6 +22,7 @@ import AdminDashboard from './pages/admindashboard'
 import ProtectedRoute from './component/protectedroute'
 import ReceiptPage from './pages/reciept'
 import DisplayStudent from './pages/displayStudent'
+import Persistent from './pages/persistent'
 
 // ==================================================
 // MAIN APP FUNCTION
@@ -51,6 +52,9 @@ function App() {
 
         {/* When URL is "/displaystudent", also show the display student page */}
         <Route path="/displaystudent" element={<DisplayStudent />} />
+
+        {/* When URL is "/persistent", also show the persistent page */}
+        <Route path="/persistent" element={<Persistent />} />
 
         {/* When URL is "/reciept", show the receipt page */}
         <Route path="/reciept" element={<ProtectedRoute><ReceiptPage /></ProtectedRoute>} />
