@@ -6,7 +6,7 @@
 # which function (view) should handle that request
 
 from django.urls import path
-from .views import get_student,get_admin,get_hall,get_payment,student_login,admin_login,student_dashboard,admin_dashboard_data,book_room,allocation_list,toggle_maintenance,allocation_graph,available_rooms
+from .views import get_student,get_admin,get_hall,get_payment,student_login,admin_login,student_dashboard,admin_dashboard_data,book_room,allocation_list,toggle_maintenance,allocation_graph,available_rooms,admin_student_receipts
 
 # List of all the URLs (web addresses) available in our API
 urlpatterns = [
@@ -57,4 +57,11 @@ urlpatterns = [
     # AVAILABLE ROOMS ENDPOINT
     # When a student wants to see available rooms in a hall at "api/available-rooms/?hall_id=X"
     path('available-rooms/', available_rooms),
+
+    # ADMIN RECEIPTS ENDPOINT
+    # When an admin wants to see all student receipts in their hall
+    path('admin/receipts/', admin_student_receipts),
+
+
+    
 ]  

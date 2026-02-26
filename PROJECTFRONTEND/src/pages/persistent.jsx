@@ -1,10 +1,35 @@
+import { useState, useEffect } from 'react'
 import './persistent.css'
 
 function Persistence() {
-    const data = localStorage.getItem("hostel_rooms_data")
-    const result = JSON.parse(data)
+    // Use state so the component re-renders when data changes
+    const [result, setResult] = useState(() => {
+        const data = localStorage.getItem("hostel_rooms_data")
+        try {
+            const parsed = JSON.parse(data)
+            return Array.isArray(parsed) ? parsed : null
+        } catch {
+            return null
+        }
+    })
 
-    if (!result || !Array.isArray(result)) {
+    // Re-read localStorage every 10 seconds to pick up fresh data
+    useEffect(() => {
+        const fetchInterval = setInterval(() => {
+            const data = localStorage.getItem("hostel_rooms_data")
+            try {
+                const parsed = JSON.parse(data)
+                setResult(Array.isArray(parsed) ? parsed : null)
+            } catch {
+                setResult(null)
+            }
+        }, 10000)
+
+        return () => clearInterval(fetchInterval)
+    }, [])
+
+    // Now the conditional return is AFTER all hooks — no rules violated
+    if (!result || result.length === 0) {
         return (
             <div className="persist-page">
                 <h1 className="persist-title">Saved Room Data</h1>

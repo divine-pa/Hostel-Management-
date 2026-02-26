@@ -226,3 +226,15 @@ export const toggleRoomMaintenance = async (roomId, adminEmail) => {
         throw error;
     }
 }
+
+// ==================================================
+// GET ADMIN RECEIPTS - Fetches all student receipts for admin's hall
+// ==================================================
+export const getAdminReceipts = async (email) => {
+    try {
+        const response = await axios.get(`${API_URL}admin/receipts/?email=${email}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}

@@ -249,7 +249,7 @@ class BookingSerializer(serializers.Serializer):
     matriculation_number = serializers.CharField()
     
 # ===================================
-# ALLOCATION SERIALIZER
+# ALLOCATION SERIALIZER 
 # ===================================
 # this serilizer pulls data from the allocation table
 class AllocationSerializer(serializers.ModelSerializer):

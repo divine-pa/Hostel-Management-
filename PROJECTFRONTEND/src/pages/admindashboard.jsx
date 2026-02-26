@@ -391,7 +391,10 @@ function AdminDashboard() {
                         </div>
 
                         {/** offline data button (persistent data) */}
-                        <Link to="/persistent" className="btn btn-primary">offline data</Link>
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: 'var(--spacing-md)' }}>
+                            <Link to="/persistent" className="btn btn-primary">offline data</Link>
+                            <Link to="/admin/receipts" className="btn btn-primary" style={{ background: '#003366' }}>Student Receipts</Link>
+                        </div>
 
                         {/* ===== ROOMS SECTION ===== */}
                         {/* This shows the list of rooms (filtered by search) */}

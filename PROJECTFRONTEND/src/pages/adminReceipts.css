@@ -1,0 +1,238 @@
+/* ========== Page ========== */
+.ar-page {
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.ar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid #3b82f6;
+}
+
+.ar-no-data {
+    text-align: center;
+    color: #94a3b8;
+    margin-top: 3rem;
+}
+
+/* ========== Search ========== */
+.ar-search {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.65rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+    margin-bottom: 1.25rem;
+}
+
+.ar-search:focus {
+    border-color: #3b82f6;
+}
+
+/* ========== Student List ========== */
+.ar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ========== Student Card ========== */
+.ar-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.4rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ar-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    border-color: #cbd5e1;
+}
+
+/* ========== Card Header ========== */
+.ar-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ar-avatar {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #3b82f6;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.ar-student-info {
+    flex: 1;
+}
+
+.ar-student-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.15rem 0;
+}
+
+.ar-student-meta {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.ar-student-meta span + span::before {
+    content: '·';
+    margin: 0 0.4rem;
+    color: #cbd5e1;
+}
+
+/* ========== Card Info Row ========== */
+.ar-info-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-top: 0.6rem;
+}
+
+.ar-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.ar-info-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+.ar-info-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+/* ========== Buttons ========== */
+.ar-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ar-btn {
+    padding: 0.4rem 0.85rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.ar-btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.ar-btn-view {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.ar-btn-download {
+    background: #003366;
+    color: white;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* ========== Receipt Detail (expandable) ========== */
+.ar-receipt-detail {
+    margin-top: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    animation: arSlideDown 0.2s ease;
+}
+
+@keyframes arSlideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ar-receipt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.6rem;
+}
+
+.ar-receipt-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.ar-receipt-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+}
+
+.ar-receipt-value {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #334155;
+}
+
+/* ========== Back Link ========== */
+.ar-back {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ar-back:hover {
+    text-decoration: underline;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 600px) {
+    .ar-card-header {
+        flex-wrap: wrap;
+    }
+
+    .ar-info-row {
+        gap: 0.75rem;
+    }
+
+    .ar-receipt-grid {
+        grid-template-columns: 1fr;
+    }
+}

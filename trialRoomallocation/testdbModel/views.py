@@ -432,7 +432,7 @@ def allocation_list(request):
     if not matric_no:
         return Response({"error": "Matriculation number is required"}, status=status.HTTP_400_BAD_REQUEST)
     
-    try:
+    try: 
         #  Find the student's allocation using their matric number
         # First get the student, then get their allocation
         student = Student.objects.get(matric_number=matric_no)
@@ -548,3 +548,54 @@ def allocation_graph(request):
    ]
 
    return Response(chart_data)
+
+
+# ==================================================
+# ADMIN STUDENT RECEIPTS - Returns all allocated students with receipt data
+# ==================================================
+# This lets admins view and download receipts for every student in their hall
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def admin_student_receipts(request):
+    admin_email = request.query_params.get("email")
+
+    if not admin_email:
+        return Response({"error": "Admin email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Find the admin and their hall
+        admin = Admin.objects.get(email=admin_email)
+
+        if not admin.hall:
+            return Response({"error": "Admin is not assigned to any hall"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get all active allocations in this admin's hall
+        allocations = Allocation.objects.filter(
+            room__hall=admin.hall,
+            status='active'
+        ).select_related('student', 'room', 'receipt')
+
+        receipts_list = []
+        for alloc in allocations:
+            receipts_list.append({
+                'receipt_no': f"BU-HAMS-{alloc.allocation_id}",
+                'full_name': alloc.student.full_name,
+                'matric_no': alloc.student.matric_number,
+                'department': alloc.student.department,
+                'level': alloc.student.level,
+                'gender': alloc.student.gender,
+                'email': alloc.student.email,
+                'phone_number': alloc.student.phone_number,
+                'house_address': alloc.student.house_address,
+                'hall_name': admin.hall.hall_name,
+                'room_number': alloc.room.room_number,
+                'allocation_date': alloc.allocation_date,
+                'status': alloc.status,
+                'transaction_reference': alloc.receipt.payment_reference if alloc.receipt else 'N/A',
+                'amount_paid': str(alloc.receipt.amount_paid) if alloc.receipt else '0',
+            })
+
+        return Response(receipts_list)
+
+    except Admin.DoesNotExist:
+        return Response({"error": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)

@@ -23,6 +23,7 @@ import ProtectedRoute from './component/protectedroute'
 import ReceiptPage from './pages/reciept'
 import DisplayStudent from './pages/displayStudent'
 import Persistent from './pages/persistent'
+import AdminReceipts from './pages/adminReceipts'
 
 // ==================================================
 // MAIN APP FUNCTION
@@ -68,6 +69,9 @@ function App() {
 
         {/* Admin Dashboard - wrapped in ProtectedRoute for security */}
         <Route path="/admindashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+
+        {/* Admin Receipts - view/download student receipts */}
+        <Route path="/admin/receipts" element={<ProtectedRoute><AdminReceipts /></ProtectedRoute>} />
       </Routes>
 
     </>
