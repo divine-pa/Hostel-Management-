@@ -100,7 +100,7 @@ def send_receipt_email(student_email, student_name, matric_number,
         return
 
     # Build email with PDF attachment using Django's EmailMessage
-    email = EmailMessage(
+    msg = EmailMessage(
         subject='Babcock University: Room Allocation Receipt',
         body=(
             f"Hello {student_name},\n\n"
@@ -118,12 +118,12 @@ def send_receipt_email(student_email, student_name, matric_number,
     )
 
     # Attach the PDF file named Receipt_[Matric_Number].pdf
-    email.attach(
+    msg.attach(
         filename=f"Receipt_{matric_number}.pdf",
         content=pdf_bytes,
         mimetype='application/pdf'
     )
 
-    email.send(fail_silently=False)
+    msg.send(fail_silently=False)
     print(f"Receipt email with PDF sent to {student_email}")
 
