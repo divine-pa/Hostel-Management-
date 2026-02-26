@@ -51,6 +51,8 @@ function Persistence() {
                     </div>
                 ))}
             </div>
+
+            <button onClick={() => window.print()} className="btn btn-primary">Print offline data</button>
         </div>
     )
 }
