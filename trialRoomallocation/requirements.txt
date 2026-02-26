@@ -18,3 +18,7 @@ python-decouple==3.8
 PyMySQL==1.1.1
 # If you prefer mysqlclient (requires Microsoft Visual C++ Build Tools):
 # mysqlclient==2.2.7
+
+# PDF Generation (for receipt emails)
+xhtml2pdf==0.2.17
+

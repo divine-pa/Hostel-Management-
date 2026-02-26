@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .section {
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .row {
+            margin-bottom: 3px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="title">BABCOCK UNIVERSITY HALL ALLOCATION</div>
+        <div class="subtitle">Official E-Receipt</div>
+        <div class="subtitle">Receipt No: {{ receipt_no }}</div>
+    </div>
+
+    <div class="section">
+        <div class="label">Student Information</div>
+        <div class="row">Name: {{ student_name }}</div>
+        <div class="row">Matric No: {{ matric_number }}</div>
+        <div class="row">Department: {{ department }}</div>
+        <div class="row">Level: {{ level }}</div>
+        <div class="row">Email: {{ email }}</div>
+    </div>
+
+    <div class="section">
+        <div class="label">Allocation Details</div>
+        <div class="row">Hall: {{ hall_name }}</div>
+        <div class="row">Room Number: {{ room_number }}</div>
+        <div class="row">Allocation Date: {{ date }}</div>
+        <div class="row">Status: Active</div>
+        <div class="row">Transaction Reference: {{ transaction_id }}</div>
+        <div class="row">Amount Paid: {{ amount_paid }}</div>
+    </div>
+
+    <div class="footer">
+        Generated on {{ date }}. This is a computer-generated document.
+    </div>
+</body>
+
+</html>
