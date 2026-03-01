@@ -61,6 +61,9 @@ function LandingPage() {
                         color: 'var(--color-text-secondary)'
                     }}>
                         Need help? Contact the hostel administration office.
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+  Tailwind is Working!
+</button>
                     </p>
                 </div>
             </div>
