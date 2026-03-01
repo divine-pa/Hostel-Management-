@@ -57,10 +57,12 @@ export default function LandingPage() {
                 onMouseLeave={e => e.target.style.color = "#bfdbfe"}>{lbl}</a>
             ))}
           </div>
-          <button onClick={() => onEnter()}
-            style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", padding: "10px 20px", borderRadius: 8, border: "none", cursor: "pointer" }}>
+
+          <Link to="/LoginPage" style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", padding: "10px 20px", borderRadius: 8, border: "none", cursor: "pointer" }}>
+
             Sign In →
-          </button>
+          </Link>
+
         </div>
       </nav>
 
@@ -95,12 +97,14 @@ export default function LandingPage() {
           {/* CTAs */}
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 40 }}>
             {/* Get Started → role picker */}
-            <button onClick={() => onEnter()}
-              style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", padding: "16px 40px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 4px 24px rgba(0,0,0,0.2)" }}
+
+
+            <Link to="/LoginPage" style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", padding: "16px 40px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 4px 24px rgba(0,0,0,0.2)" }}
               onMouseEnter={e => e.currentTarget.style.background = "#F0F4FF"}
               onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
               Get Started →
-            </button>
+            </Link>
+
             <a href="#how-it-works"
               style={{ color: "#fff", fontWeight: 600, fontSize: 13, letterSpacing: "0.04em", padding: "16px 40px", borderRadius: 10, border: "2px solid rgba(255,255,255,0.3)", cursor: "pointer", textDecoration: "none", display: "inline-block" }}
               onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
@@ -248,12 +252,14 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => onEnter("admin")}
+
+
+                <Link to="/adminlogin" className="btn btn-primary btn-lg"
                   style={{ width: "100%", padding: "12px 0", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 8, border: "none", background: "#fff", color: NAVY, cursor: "pointer", transition: "background 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "#F0F4FF"}
                   onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
                   Admin Sign In →
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -273,14 +279,7 @@ export default function LandingPage() {
           <p style={{ fontSize: 15, color: "#bfdbfe", lineHeight: 1.7, marginBottom: 36, maxWidth: 480, margin: "0 auto 36px" }}>
             Sign in with your matric number to browse available halls, request your allocation, and receive your official e-receipt instantly.
           </p>
-         <Link to="/adminlogin" className="btn btn-primary btn-lg"
-                onMouseEnter={e => { e.currentTarget.style.background = NAVY; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = NAVY; }}
 
-                style={{ width: "100%", padding: "12px 0", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 8, border: `2px solid ${NAVY}`, color: NAVY, background: "transparent", cursor: "pointer", transition: "all 0.2s" }}
-              >
-                Admin Sign In →
-              </Link>
 
           <p style={{ fontSize: 11, color: "rgba(191,219,254,0.5)", marginTop: 16 }}>No registration needed · Use your existing matric number</p>
         </div>
@@ -300,9 +299,13 @@ export default function LandingPage() {
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
             <span>Final Year Project</span>
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-            <button onClick={() => onEnter()} style={{ background: "none", border: "none", color: "#bfdbfe", cursor: "pointer", fontSize: 12, padding: 0 }}
+
+
+            <Link to="/LoginPage" style={{ background: "none", border: "none", color: "#bfdbfe", cursor: "pointer", fontSize: 12, padding: 0 }}
               onMouseEnter={e => e.target.style.color = "#fff"}
-              onMouseLeave={e => e.target.style.color = "#bfdbfe"}>Sign In</button>
+              onMouseLeave={e => e.target.style.color = "#bfdbfe"}>
+              Sign In →
+            </Link>
           </div>
         </div>
       </footer>

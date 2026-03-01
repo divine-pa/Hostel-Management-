@@ -24,6 +24,7 @@ import ReceiptPage from './pages/reciept'
 import DisplayStudent from './pages/displayStudent'
 import Persistent from './pages/persistent'
 import AdminReceipts from './pages/adminReceipts'
+import LoginPage from './pages/login'
 
 // ==================================================
 // MAIN APP FUNCTION
@@ -41,6 +42,8 @@ function App() {
 
         {/* When URL is "/", show the landing page */}
         <Route path="/" element={<LandingPage />} />
+
+        <Route path='/LoginPage' element ={<LoginPage/>} />
 
         {/* When URL is "/adminlogin", show the admin login page */}
         <Route path="/adminlogin" element={<AdminLogin />} />

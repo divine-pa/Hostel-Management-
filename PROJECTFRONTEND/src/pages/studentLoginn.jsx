@@ -1,136 +1,254 @@
 // ==================================================
 // STUDENTLOGINN.JSX - Student login page
 // ==================================================
-// This is where students enter their details to log in
-// Think of this as the door where students show their ID card
+// Split-panel Tailwind design matching the HostelMS theme.
+// Left  → navy branding panel.
+// Right → student login form.
 
-import { Link } from "react-router-dom"
-import { useState } from "react"
+import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginuser } from "../services/auth";
 
-
-// ==================================================
-// STUDENT LOGIN COMPONENT
-// ==================================================
-// This creates the login form for students
 function studentlogin() {
    // ===== STATE VARIABLES =====
-   // These are like empty boxes that will store what the student types
-
-   // This box stores the matric number the student types
-   const [matriculation_number, setMatriculation_number] = useState("")
-
-   // This box stores the password the student types
-   const [password, setPassword] = useState("")
-
-   // This is a tool to navigate (move) to different pages
-   const navigate = useNavigate()
+   const [matriculation_number, setMatriculation_number] = useState("");
+   const [password, setPassword] = useState("");
+   const [showPwd, setShowPwd] = useState(false);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState("");
+   const navigate = useNavigate();
 
    // ===== HANDLE LOGIN SUBMISSION =====
-   // This function runs when the student clicks the "Login" button
    const handlesubmit = async (e) => {
-      // Step 1: Stop the page from refreshing (normal form behavior)
-      e.preventDefault()
+      e.preventDefault();
+      setError("");
+      setLoading(true);
 
       try {
-         // Step 2: Try to login using the matric number and password
-         await loginuser(matriculation_number, password)
-
-         // Step 3: If login was successful, take them to their dashboard
-         navigate("/studentdashboard")
-
-      } catch (error) {
-         // Step 4: If login failed (wrong matric number or password), show error message
-         alert("login failed , check your matric number or password")
+         await loginuser(matriculation_number, password);
+         navigate("/studentdashboard");
+      } catch (err) {
+         setError("Login failed. Check your matric number or password.");
+      } finally {
+         setLoading(false);
       }
-   }
+   };
 
    return (
-      // Main container for the page
-      <div className="page-container">
-         {/* Box to hold the login form */}
-         <div style={{ width: '100%', maxWidth: '450px' }}>
-            {/* Card (nice looking box) for the form */}
-            <div className="card">
-               {/* ===== HEADER SECTION ===== */}
-               <div className="card-header">
-                  {/* Title: "Student Login" */}
-                  <h2 className="text-center" style={{ marginBottom: 'var(--spacing-sm)' }}>Student Login</h2>
+      <div className="flex min-h-screen font-sans">
+         {/* ── LEFT — Navy branding panel ─────────────────────────────────── */}
+         <div className="hidden lg:flex w-[420px] shrink-0 flex-col justify-between p-[52px_48px] bg-[#1e3a6e] relative overflow-hidden min-h-screen">
+            {/* Grid texture */}
+            <div
+               className="absolute inset-0 pointer-events-none"
+               style={{
+                  backgroundImage:
+                     "linear-gradient(rgba(255,255,255,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.1) 1px,transparent 1px)",
+                  backgroundSize: "36px 36px",
+               }}
+            />
+            {/* Glow blob */}
+            <div className="absolute -bottom-10 -right-10 w-80 h-80 rounded-full bg-blue-300/[0.07] blur-[80px] pointer-events-none" />
 
-                  {/* Subtitle */}
-                  <p className="text-center text-secondary" style={{ marginBottom: '0' }}>
-                     Login to your account
-                  </p>
+            {/* Top content */}
+            <div className="relative z-10">
+               {/* Logo */}
+               <div className="flex items-center gap-3 mb-[52px]">
+                  <div className="w-10 h-10 rounded-[10px] bg-white/15 border border-white/20 flex items-center justify-center text-xl">
+                     🏠
+                  </div>
+                  <div>
+                     <div className="text-white font-bold text-xl tracking-tight leading-none">
+                        HostelMS
+                     </div>
+                     <div className="text-blue-200 text-[10px] font-semibold tracking-widest uppercase mt-[3px]">
+                        Allocation System
+                     </div>
+                  </div>
+               </div>
 
-                  {/* Helpful hint for students */}
-                  <p className="form-hint text-center">
-                     Use your Babcock matric number and UMIS password
+               {/* Headline */}
+               <div className="mb-9">
+                  <div className="flex items-center gap-2.5 mb-4">
+                     <div className="w-6 h-px bg-blue-200/50" />
+                     <span className="text-blue-200 text-[10px] font-semibold tracking-widest uppercase">
+                        Student Portal
+                     </span>
+                  </div>
+                  <h2 className="text-white text-[32px] font-extrabold leading-[1.15] tracking-tight mb-3.5">
+                     Welcome back,
+                     <br />
+                     Student.
+                  </h2>
+                  <p className="text-blue-200/75 text-[13px] leading-[1.7] max-w-[300px]">
+                     Sign in with your Babcock matric number and UMIS password to
+                     access your hostel dashboard, view allocations, and download
+                     e-receipts.
                   </p>
                </div>
 
-               {/* ===== LOGIN FORM ===== */}
-               {/* When submitted, run the handlesubmit function */}
+               {/* Feature bullets */}
+               <div className="flex flex-col gap-3.5">
+                  {[
+                     {
+                        label: "View Allocation",
+                        sub: "Check your assigned room and hall details",
+                     },
+                     {
+                        label: "Download Receipt",
+                        sub: "Get your e-receipt instantly after allocation",
+                     },
+                     {
+                        label: "Track Payment",
+                        sub: "Verify your hostel fee payment status",
+                     },
+                     {
+                        label: "Secure Access",
+                        sub: "Your data is protected with encrypted login",
+                     },
+                  ].map((f) => (
+                     <div key={f.label} className="flex items-start gap-3">
+                        <div className="w-5 h-5 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-[9px] text-white shrink-0 mt-px">
+                           ✓
+                        </div>
+                        <div>
+                           <div className="text-white text-xs font-semibold leading-[1.2]">
+                              {f.label}
+                           </div>
+                           <div className="text-blue-200/65 text-[11px] mt-0.5">
+                              {f.sub}
+                           </div>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+
+            <div className="relative z-10" />
+         </div>
+
+         {/* ── RIGHT — Login form ─────────────────────────────────────────── */}
+         <div className="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-16 bg-[#F5F5F5] overflow-y-auto min-h-screen">
+            {/* Back link */}
+            <div className="w-full max-w-[380px] mb-10">
+               <Link
+                  to="/LoginPage"
+                  className="text-slate-500 text-xs flex items-center gap-1.5 hover:text-[#1e3a6e] transition-colors no-underline"
+               >
+                  ← Back to Login
+               </Link>
+            </div>
+
+            <div className="w-full max-w-[380px]">
+               {/* Header */}
+               <div className="flex items-center gap-3 mb-1.5">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-lg shrink-0">
+                     🎒
+                  </div>
+                  <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                     Student Sign In
+                  </h1>
+               </div>
+               <p className="text-xs text-slate-500 mb-7 ml-12">
+                  Use your Babcock matric number and UMIS password
+               </p>
+
+               {/* Error message */}
+               {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 rounded-[10px] px-4 py-2.5 text-[13px] mb-4 flex items-center gap-2">
+                     ⚠ {error}
+                  </div>
+               )}
+
+               {/* Login form */}
                <form onSubmit={handlesubmit}>
-                  {/* MATRIC NUMBER INPUT */}
-                  <div className="form-group">
-                     {/* Label (text above the input box) */}
-                     <label htmlFor="matriculation_number" className="form-label">
+                  {/* Matric Number */}
+                  <div className="mb-4">
+                     <label
+                        htmlFor="matriculation_number"
+                        className="block text-[10px] font-semibold tracking-widest uppercase text-slate-500 mb-2"
+                     >
                         Matriculation Number
                      </label>
-
-                     {/* Input box where student types their matric number */}
                      <input
-                        type="text"  // Type of input (regular text)
+                        type="text"
                         name="matriculation_number"
                         id="matriculation_number"
-                        className="form-input"
-                        placeholder="e.g., 19/0001"  // Example text shown in empty box
-                        value={matriculation_number}  // What's currently in the box
-                        onChange={(e) => setMatriculation_number(e.target.value)}  // Update the box when they type
-                        required  // This field must be filled before submitting
+                        placeholder="e.g., 19/0001"
+                        value={matriculation_number}
+                        onChange={(e) => {
+                           setMatriculation_number(e.target.value);
+                           setError("");
+                        }}
+                        required
+                        autoFocus
+                        className="w-full bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-4 py-3 outline-none transition-all duration-200 focus:border-[#1e3a6e] focus:ring-[3px] focus:ring-[#1e3a6e]/[0.08]"
                      />
                   </div>
 
-                  {/* PASSWORD INPUT */}
-                  <div className="form-group">
-                     {/* Label for password */}
-                     <label htmlFor="password" className="form-label">
+                  {/* Password */}
+                  <div className="mb-2 relative">
+                     <label
+                        htmlFor="password"
+                        className="block text-[10px] font-semibold tracking-widest uppercase text-slate-500 mb-2"
+                     >
                         Password
                      </label>
-
-                     {/* Input box where student types their password */}
                      <input
-                        type="password"  // Type "password" hides what they type (shows ••••)
+                        type={showPwd ? "text" : "password"}
                         name="password"
                         id="password"
-                        className="form-input"
-                        placeholder="Enter your password"
-                        value={password}  // What's currently in the box
-                        onChange={(e) => setPassword(e.target.value)}  // Update the box when they type
-                        required  // This field must be filled
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                           setPassword(e.target.value);
+                           setError("");
+                        }}
+                        required
+                        className="w-full bg-white border border-slate-200 rounded-lg text-slate-900 text-sm pl-4 pr-11 py-3 outline-none transition-all duration-200 focus:border-[#1e3a6e] focus:ring-[3px] focus:ring-[#1e3a6e]/[0.08]"
                      />
+                     <button
+                        type="button"
+                        onClick={() => setShowPwd(!showPwd)}
+                        className="absolute right-3.5 bottom-3.5 bg-transparent border-none cursor-pointer text-slate-400 text-sm leading-none p-0"
+                     >
+                        {showPwd ? "🙈" : "👁"}
+                     </button>
                   </div>
 
-                  {/* LOGIN BUTTON */}
-                  {/* When clicked, submit the form (which calls handlesubmit) */}
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                     Login
+                  {/* Forgot password */}
+                  <div className="flex justify-end mb-5">
+                     <span className="text-xs text-[#1e3a6e] cursor-pointer hover:underline">
+                        Forgot password?
+                     </span>
+                  </div>
+
+                  {/* Sign In button */}
+                  <button
+                     type="submit"
+                     disabled={loading}
+                     className={`w-full py-3.5 text-white border-none rounded-lg text-[13px] font-bold tracking-wider uppercase transition-colors duration-200 ${loading
+                           ? "bg-[#4a6fa5] cursor-not-allowed"
+                           : "bg-[#1e3a6e] cursor-pointer hover:bg-[#162d57]"
+                        }`}
+                  >
+                     {loading ? "Verifying..." : "Sign In →"}
                   </button>
                </form>
 
-               {/* ===== BACK BUTTON ===== */}
-               {/* Link to go back to the home page */}
-               <div className="text-center" style={{ marginTop: 'var(--spacing-lg)' }}>
-                  <Link to="/landingpage" className="btn btn-secondary btn-sm" style={{ textDecoration: 'none' }}>
-                     ← Back to Home
-                  </Link>
-               </div>
+               {/* Switch role */}
+               <Link
+                  to="/LoginPage"
+                  className="block w-full mt-3.5 py-3 text-center text-slate-500 text-xs no-underline hover:text-[#1e3a6e] transition-colors"
+               >
+                  ← Sign in as a different role
+               </Link>
             </div>
          </div>
       </div>
-   )
+   );
 }
 
 // Export this component so it can be used in App.jsx
-export default studentlogin
+export default studentlogin;
