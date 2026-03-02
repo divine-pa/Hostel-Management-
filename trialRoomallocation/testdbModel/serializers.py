@@ -82,9 +82,16 @@ class AdminLoginSerializer(serializers.Serializer):
 # ==================================================
 # This translates room information
 class RoomSerializer(serializers.ModelSerializer):
+    # Include the hall name so the frontend can display it (e.g. room_details.hall_name)
+    hall_name = serializers.CharField(source='hall.hall_name', read_only=True)
+
     class Meta:
         model = Room  # Get data from the Room table
-        fields = '__all__'  # Send ALL room information
+        fields = [
+            'room_id', 'hall', 'hall_name', 'room_number', 'capacity',
+            'current_occupants', 'room_status', 'is_under_maintenance',
+            'created_at', 'updated_at',
+        ]
 
 # ==================================================
 # STUDENT ROOM SERIALIZER - Room info for students (no occupant names)

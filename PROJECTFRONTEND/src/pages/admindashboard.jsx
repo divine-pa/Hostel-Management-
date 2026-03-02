@@ -194,13 +194,16 @@ export default function AdminDashboard() {
                     <div className="admin-card">
                         <div className="admin-card-header">Allocation Summary</div>
                         <div className="admin-card-body">
-                            {/* Room status breakdown */}
-                            {[
-                                ["Total Rooms", totalRooms, "var(--admin-navy)"],
-                                ["Available Rooms", availableRooms, "var(--admin-green)"],
-                                ["Full Rooms", totalRooms - availableRooms - roomsUnderMaint, "var(--admin-red)"],
-                                ["Under Maintenance", roomsUnderMaint, "var(--admin-orange)"],
-                            ].map(([lbl, cnt, col]) => (
+                            {/* Room status breakdown — count full rooms properly */}
+                            {(() => {
+                                const fullRooms = roomsList.filter(r => !r.is_under_maintenance && r.capacity > 0 && r.current_occupants >= r.capacity).length;
+                                return [
+                                    ["Total Rooms", totalRooms, "var(--admin-navy)"],
+                                    ["Available Rooms", availableRooms, "var(--admin-green)"],
+                                    ["Full Rooms", fullRooms, "var(--admin-red)"],
+                                    ["Under Maintenance", roomsUnderMaint, "var(--admin-orange)"],
+                                ];
+                            })().map(([lbl, cnt, col]) => (
                                 <div key={lbl} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--admin-border)" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                         {/* Colored dot */}
