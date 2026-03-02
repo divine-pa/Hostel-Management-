@@ -1,36 +1,54 @@
 // ==================================================
-// ADMINRECEIPTS.JSX - Admin view of all student receipts
+// ADMINRECEIPTS.JSX — Standalone Admin Receipts Page (Legacy)
 // ==================================================
-// This page lets admins see every allocated student in their hall
-// with basic info, view the full receipt, and download it as PDF
+// ⚠ NOTE: This page's functionality has been INTEGRATED into AdminReports.jsx
+//   (specifically in the "Receipts" tab). This file is kept for backward
+//   compatibility — if someone visits the old /admin/receipts URL, they'll
+//   be redirected to /admin/reports by the App.jsx router.
+//
+// WHAT THIS PAGE DOES:
+//   - Loads all student receipts for the admin's hall
+//   - Lets the admin search by name, matric number, or room
+//   - Shows student cards with avatar, basic info, and room details
+//   - Lets the admin expand a receipt to see full details
+//   - Lets the admin download any receipt as a PDF
 
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { getAdminReceipts } from '../services/auth'
-import { PDFDownloadLink } from '@react-pdf/renderer'
-import ReceiptDocument from './ReceiptDocument'
-import './adminReceipts.css'
+import { getAdminReceipts } from '../services/auth'       // API function to fetch receipts
+import { PDFDownloadLink } from '@react-pdf/renderer'      // Generates downloadable PDFs
+import ReceiptDocument from './ReceiptDocument'             // The PDF template
+import './adminReceipts.css'                                // Styles for this page
 
 function AdminReceipts() {
     const navigate = useNavigate()
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [students, setStudents] = useState([])
-    const [filteredStudents, setFilteredStudents] = useState([])
-    const [searchTerm, setSearchTerm] = useState('')
-    const [expandedReceipt, setExpandedReceipt] = useState(null) // tracks which receipt is expanded
 
+    // ===== STATE VARIABLES =====
+    const [loading, setLoading] = useState(true)               // Are we still loading data?
+    const [error, setError] = useState(null)                   // Did something go wrong?
+    const [students, setStudents] = useState([])               // All receipt data from the server
+    const [filteredStudents, setFilteredStudents] = useState([]) // Receipts after search filter
+    const [searchTerm, setSearchTerm] = useState('')            // What the admin typed in search
+    const [expandedReceipt, setExpandedReceipt] = useState(null) // Which receipt is expanded (null = none)
+
+    // ===== LOAD RECEIPTS WHEN PAGE OPENS =====
+    // This runs once when the component first appears
     useEffect(() => {
         const loadReceipts = async () => {
             try {
+                // Step 1: Check if an admin is logged in
                 const userString = localStorage.getItem('Admin')
                 if (!userString) {
+                    // Not logged in → redirect to login page
                     navigate('/adminlogin')
                     return
                 }
 
+                // Step 2: Get the admin's email and fetch their hall's receipts
                 const admin = JSON.parse(userString)
                 const data = await getAdminReceipts(admin.email)
+
+                // Step 3: Save the data
                 setStudents(data)
                 setFilteredStudents(data)
                 setLoading(false)
@@ -39,6 +57,7 @@ function AdminReceipts() {
                 setError('Failed to load student receipts.')
                 setLoading(false)
 
+                // If unauthorized (401), redirect to login
                 if (err.response && err.response.status === 401) {
                     navigate('/adminlogin')
                 }
@@ -47,16 +66,19 @@ function AdminReceipts() {
         loadReceipts()
     }, [navigate])
 
-    // Search handler
+    // ===== SEARCH HANDLER =====
+    // Filters receipts as the admin types in the search box
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase()
         setSearchTerm(term)
 
+        // If search is empty, show all receipts
         if (term === '') {
             setFilteredStudents(students)
             return
         }
 
+        // Filter by name, matric number, or room number
         const results = students.filter(s =>
             s.full_name.toLowerCase().includes(term) ||
             s.matric_no.toLowerCase().includes(term) ||
@@ -65,12 +87,14 @@ function AdminReceipts() {
         setFilteredStudents(results)
     }
 
-    // Toggle receipt detail expansion
+    // ===== TOGGLE RECEIPT EXPANSION =====
+    // Click once to expand, click again to collapse
     const toggleReceipt = (receiptNo) => {
         setExpandedReceipt(prev => prev === receiptNo ? null : receiptNo)
     }
 
-    // Get initials for avatar
+    // ===== GET INITIALS FOR AVATAR =====
+    // e.g., "James Okeke" → "JO"
     const getInitials = (name) => {
         if (!name) return '?'
         const parts = name.trim().split(' ')
@@ -79,15 +103,18 @@ function AdminReceipts() {
             : parts[0][0].toUpperCase()
     }
 
+    // ===== LOADING & ERROR STATES =====
     if (loading) return <div className="ar-page"><p>Loading student receipts...</p></div>
     if (error) return <div className="ar-page"><p style={{ color: '#e11d48' }}>{error}</p></div>
 
+    // ===== RENDER THE PAGE =====
     return (
         <div className="ar-page">
-            <Link to="/admindashboard" className="ar-back">← Back to Dashboard</Link>
+            {/* Link back to main admin dashboard */}
+            <Link to="/admin" className="ar-back">← Back to Dashboard</Link>
             <h1 className="ar-title">Student Receipts</h1>
 
-            {/* Search Bar */}
+            {/* Search Bar — filters receipts in real time */}
             <input
                 type="text"
                 placeholder="Search by name, matric number, or room..."
@@ -96,13 +123,16 @@ function AdminReceipts() {
                 className="ar-search"
             />
 
+            {/* Show message if no receipts match the search */}
             {filteredStudents.length === 0 ? (
                 <p className="ar-no-data">No student receipts found.</p>
             ) : (
                 <div className="ar-list">
+                    {/* Loop through each student receipt */}
                     {filteredStudents.map(student => (
                         <div className="ar-card" key={student.receipt_no}>
-                            {/* Card Header */}
+
+                            {/* Card Header: avatar + student name/info */}
                             <div className="ar-card-header">
                                 <div className="ar-avatar">{getInitials(student.full_name)}</div>
                                 <div className="ar-student-info">
@@ -115,7 +145,7 @@ function AdminReceipts() {
                                 </div>
                             </div>
 
-                            {/* Basic Info Row */}
+                            {/* Basic Info Row: Room, Hall, Gender */}
                             <div className="ar-info-row">
                                 <div className="ar-info-item">
                                     <span className="ar-info-label">Room</span>
@@ -131,8 +161,9 @@ function AdminReceipts() {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
+                            {/* Action Buttons: View Receipt + Download PDF */}
                             <div className="ar-actions">
+                                {/* Toggle button to expand/collapse receipt details */}
                                 <button
                                     className="ar-btn ar-btn-view"
                                     onClick={() => toggleReceipt(student.receipt_no)}
@@ -140,6 +171,8 @@ function AdminReceipts() {
                                     {expandedReceipt === student.receipt_no ? '▲ Hide Receipt' : '▼ View Receipt'}
                                 </button>
 
+                                {/* PDF download button
+                                    Uses @react-pdf/renderer to generate real PDF files */}
                                 <PDFDownloadLink
                                     document={<ReceiptDocument data={student} />}
                                     fileName={`BU-Receipt_${student.matric_no}.pdf`}
@@ -149,10 +182,12 @@ function AdminReceipts() {
                                 </PDFDownloadLink>
                             </div>
 
-                            {/* Expanded Receipt Detail */}
+                            {/* Expanded Receipt Detail
+                                Only shows when the admin clicks "View Receipt" */}
                             {expandedReceipt === student.receipt_no && (
                                 <div className="ar-receipt-detail">
                                     <div className="ar-receipt-grid">
+                                        {/* Each item shows a label and value */}
                                         <div className="ar-receipt-item">
                                             <span className="ar-receipt-label">Receipt No</span>
                                             <span className="ar-receipt-value">{student.receipt_no}</span>
@@ -202,4 +237,5 @@ function AdminReceipts() {
     )
 }
 
+// Export so it can be used in App.jsx
 export default AdminReceipts

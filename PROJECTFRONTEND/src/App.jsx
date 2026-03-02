@@ -1,86 +1,92 @@
 // ==================================================
-// APP.JSX - This is the main application file
+// APP.JSX - Main application file with routing
 // ==================================================
-// Think of this as a traffic controller:
-// - It decides which page to show based on the web address (URL)
-// - It sets up all the different routes (like roads) in the app
-// - It protects certain pages so only logged-in users can see them
+// This is the ENTRY POINT of the React app.
+// It defines ALL the pages (routes) and which URLs go to which page.
+//
+// ROUTE STRUCTURE:
+//   / or /landingpage  → Landing page (public, no login needed)
+//   /LoginPage         → Login page selector
+//   /adminlogin        → Admin login form
+//   /studentlogin      → Student login form
+//   /studentdashboard  → Student dashboard (protected - needs login)
+//   /reciept           → Student receipt page (protected)
+//
+//   /admin             → Admin dashboard layout with sidebar
+//   /admin/rooms       → Room management page
+//   /admin/students    → Student records page
+//   /admin/reports     → Reports & analytics page
+//   /admin/settings    → System settings page
+//
+// PROTECTED ROUTES:
+//   Some pages require login. They are wrapped in <ProtectedRoute>
+//   which checks if the user is logged in before showing the page.
+//
+// BACKWARD COMPATIBILITY:
+//   Old URLs like /admindashboard, /persistent, /admin/receipts
+//   are redirected to their new locations using <Navigate>.
 
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { NavLink } from 'react-router-dom'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
-// Import all the different pages in our app
+// Import all pages
 import LandingPage from './pages/landingpage'
 import AdminLogin from './pages/adminLogin'
 import StudentLogin from './pages/studentLoginn'
 import StudentDashboard from './pages/studentdashboard'
-import AdminDashboard from './pages/admindashboard'
 import ProtectedRoute from './component/protectedroute'
 import ReceiptPage from './pages/reciept'
-import DisplayStudent from './pages/displayStudent'
-import Persistent from './pages/persistent'
-import AdminReceipts from './pages/adminReceipts'
 import LoginPage from './pages/login'
 
-// ==================================================
-// MAIN APP FUNCTION
-// ==================================================
-// This is the main component that runs the whole application
+// Admin pages (new sidebar layout)
+import AdminLayout from './pages/AdminLayout'       // The sidebar wrapper
+import AdminDashboard from './pages/admindashboard'  // Dashboard overview
+import AdminRooms from './pages/AdminRooms'          // Room management
+import AdminStudents from './pages/AdminStudents'    // Student records
+import AdminReports from './pages/AdminReports'      // Reports & analytics
+import AdminSettings from './pages/AdminSettings'    // System settings
+
 function App() {
-
-
   return (
     <>
-      {/* Routes define which page to show based on the URL */}
       <Routes>
-        {/* ===== PUBLIC ROUTES ===== */}
-        {/* These pages can be accessed by anyone, even without logging in */}
-
-        {/* When URL is "/", show the landing page */}
+        {/* ===== PUBLIC ROUTES (no login needed) ===== */}
         <Route path="/" element={<LandingPage />} />
-
-        <Route path='/LoginPage' element ={<LoginPage/>} />
-
-        {/* When URL is "/adminlogin", show the admin login page */}
+        <Route path='/LoginPage' element={<LoginPage />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
-
-        {/* When URL is "/studentlogin", show the student login page */}
         <Route path="/studentlogin" element={<StudentLogin />} />
-
-        {/* When URL is "/landingpage", also show the landing page */}
         <Route path="/landingpage" element={<LandingPage />} />
 
-        {/* When URL is "/displaystudent", also show the display student page */}
-        <Route path="/displaystudent" element={<DisplayStudent />} />
-
-        {/* When URL is "/persistent", also show the persistent page */}
-        <Route path="/persistent" element={<Persistent />} />
-
-        {/* When URL is "/reciept", show the receipt page */}
+        {/* ===== STUDENT ROUTES (protected - needs student login) ===== */}
         <Route path="/reciept" element={<ProtectedRoute><ReceiptPage /></ProtectedRoute>} />
-
-        {/* ===== PROTECTED ROUTES ===== */}
-        {/* These pages can ONLY be accessed after logging in */}
-        {/* If you try to visit without logging in, you'll be kicked back to login */}
-
-        {/* Student Dashboard - wrapped in ProtectedRoute for security */}
         <Route path="/studentdashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
 
-        {/* Admin Dashboard - wrapped in ProtectedRoute for security */}
-        <Route path="/admindashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        {/* ===== ADMIN ROUTES (protected - needs admin login) =====
+            These use NESTED ROUTES:
+            - AdminLayout renders the SIDEBAR (always visible)
+            - The child routes render INSIDE the sidebar's content area
+            - "index" means the default page when visiting /admin */}
+        <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="rooms" element={<AdminRooms />} />
+          <Route path="students" element={<AdminStudents />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
 
-        {/* Admin Receipts - view/download student receipts */}
-        <Route path="/admin/receipts" element={<ProtectedRoute><AdminReceipts /></ProtectedRoute>} />
+        {/* ===== BACKWARD COMPATIBILITY REDIRECTS =====
+            If someone uses an old URL, send them to the new one */}
+        <Route path="/admindashboard" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/receipts" element={<Navigate to="/admin/reports" replace />} />
+        <Route path="/persistent" element={<Navigate to="/admin/students" replace />} />
+        <Route path="/displaystudent" element={<Navigate to="/admin/students" replace />} />
       </Routes>
-
     </>
   )
-
 }
 
-// Export this component so it can be used in other files
 export default App

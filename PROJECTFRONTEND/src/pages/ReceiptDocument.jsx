@@ -1,15 +1,36 @@
+// ==================================================
+// RECEIPTDOCUMENT.JSX — PDF Receipt Template
+// ==================================================
+// This file creates the PDF version of the hostel allocation receipt.
+// It uses @react-pdf/renderer (a library that generates real PDF files).
+//
+// HOW IT WORKS:
+//   - This is NOT a regular web page — it's a PDF document
+//   - It uses special components: Document, Page, View, Text (NOT div, p, span)
+//   - It gets student data through the "data" prop
+//   - It's used in two places:
+//     1. reciept.jsx → Student downloads their own receipt
+//     2. AdminReports.jsx / adminReceipts.jsx → Admin downloads student receipts
+//
+// The StyleSheet.create() works like CSS but for PDFs.
+// You can't use Tailwind or regular CSS here — only React-PDF styles.
+
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
-// ─── HostelMS Navy Theme ──────────────────────────────────────────────────────
-const NAVY = "#1e3a6e";
-const NAVY_LIGHT = "#2d4f8e";
-const TEXT_PRIMARY = "#0f172a";
-const TEXT_MUTED = "#64748b";
-const BORDER = "#e2e8f0";
-const GREEN = "#16a34a";
-const BG_LIGHT = "#f8fafc";
+// ─── Color Constants (navy theme matching the rest of the app) ───
+const NAVY = "#1e3a6e";           // Main navy blue color
+const NAVY_LIGHT = "#2d4f8e";     // Lighter navy (not used directly but available)
+const TEXT_PRIMARY = "#0f172a";    // Dark text color
+const TEXT_MUTED = "#64748b";     // Light gray text for labels
+const BORDER = "#e2e8f0";        // Light border color
+const GREEN = "#16a34a";         // Green for "confirmed" status
+const BG_LIGHT = "#f8fafc";      // Very light background
 
+// ─── PDF Stylesheet ───
+// This is like CSS but for PDF documents
+// Each key (page, header, logoText, etc.) is a style that can be applied to components
 const styles = StyleSheet.create({
+    // Page layout: padding, font, and background
     page: {
         padding: 0,
         fontSize: 10,
@@ -18,7 +39,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#ffffff",
     },
 
-    // ── Header ──
+    // ── Header section (navy blue bar at top) ──
     header: {
         backgroundColor: NAVY,
         paddingVertical: 28,
@@ -26,6 +47,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         position: "relative",
     },
+    // Big white "HostelMS" text in the header
     logoText: {
         fontSize: 22,
         fontWeight: "bold",
@@ -33,6 +55,7 @@ const styles = StyleSheet.create({
         letterSpacing: -0.5,
         marginBottom: 3,
     },
+    // Small subtitle under the logo
     headerSubtitle: {
         fontSize: 8,
         letterSpacing: 3,
@@ -40,6 +63,7 @@ const styles = StyleSheet.create({
         color: "#bfdbfe",
         marginBottom: 12,
     },
+    // "VERIFIED & SECURE" badge in the header
     verifiedBadge: {
         flexDirection: "row",
         alignItems: "center",
@@ -51,6 +75,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         alignSelf: "center",
     },
+    // Small green dot next to "VERIFIED"
     verifiedDot: {
         width: 5,
         height: 5,
@@ -64,7 +89,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
 
-    // ── Receipt number bar ──
+    // ── Receipt number bar (light gray strip below header) ──
     refBar: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -89,12 +114,13 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
 
-    // ── Sections ──
+    // ── Section containers (Student Info, Allocation Details) ──
     sectionContainer: {
         paddingHorizontal: 40,
         paddingTop: 18,
         paddingBottom: 6,
     },
+    // Section title (e.g. "STUDENT INFORMATION")
     sectionTitle: {
         fontSize: 7,
         letterSpacing: 2.5,
@@ -103,6 +129,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginBottom: 10,
     },
+    // Each row: label on the left, value on the right
     row: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -120,6 +147,7 @@ const styles = StyleSheet.create({
         textAlign: "right",
         maxWidth: "60%",
     },
+    // Green text for the "Status" field
     rowValueGreen: {
         fontSize: 10,
         color: GREEN,
@@ -127,7 +155,7 @@ const styles = StyleSheet.create({
         textAlign: "right",
     },
 
-    // ── Confirmation stamp ──
+    // ── Confirmation stamp (green box at bottom) ──
     stamp: {
         flexDirection: "row",
         alignItems: "center",
@@ -163,7 +191,7 @@ const styles = StyleSheet.create({
         marginTop: 16,
     },
 
-    // ── Instructions ──
+    // ── Instructions section (bullet points) ──
     instructions: {
         paddingHorizontal: 40,
         paddingTop: 14,
@@ -176,7 +204,7 @@ const styles = StyleSheet.create({
         marginBottom: 3,
     },
 
-    // ── Footer ──
+    // ── Footer (absolute positioned at page bottom) ──
     footer: {
         position: "absolute",
         bottom: 30,
@@ -193,10 +221,20 @@ const styles = StyleSheet.create({
     },
 });
 
+// ==================================================
+// THE ACTUAL PDF RECEIPT COMPONENT
+// ==================================================
+// "data" prop contains all the student and allocation info:
+//   data.receipt_no, data.full_name, data.matric_no, data.department,
+//   data.level, data.gender, data.email, data.phone_number,
+//   data.house_address, data.hall_name, data.room_number,
+//   data.allocation_date, data.transaction_reference,
+//   data.amount_paid, data.status
 const ReceiptDocument = ({ data }) => (
     <Document>
         <Page size="A4" style={styles.page}>
-            {/* ── Navy header ── */}
+
+            {/* ── Navy header with logo and "VERIFIED" badge ── */}
             <View style={styles.header}>
                 <Text style={styles.logoText}>HostelMS</Text>
                 <Text style={styles.headerSubtitle}>
@@ -208,13 +246,14 @@ const ReceiptDocument = ({ data }) => (
                 </View>
             </View>
 
-            {/* ── Receipt number ── */}
+            {/* ── Receipt number (unique ID for this receipt) ── */}
             <View style={styles.refBar}>
                 <Text style={styles.refLabel}>Receipt No</Text>
                 <Text style={styles.refValue}>{data.receipt_no}</Text>
             </View>
 
-            {/* ── Student information ── */}
+            {/* ── Student information section ──
+                Shows all personal details of the student */}
             <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Student Information</Text>
                 {[
@@ -234,7 +273,8 @@ const ReceiptDocument = ({ data }) => (
                 ))}
             </View>
 
-            {/* ── Allocation details ── */}
+            {/* ── Allocation details section ──
+                Shows which room was assigned and payment info */}
             <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Allocation Details</Text>
                 {[
@@ -257,14 +297,14 @@ const ReceiptDocument = ({ data }) => (
                         <Text style={styles.rowValue}>{value || "—"}</Text>
                     </View>
                 ))}
-                {/* Status row — green */}
+                {/* Status row in green to show it's confirmed */}
                 <View style={styles.row}>
                     <Text style={styles.rowLabel}>Status</Text>
                     <Text style={styles.rowValueGreen}>{data.status}</Text>
                 </View>
             </View>
 
-            {/* ── Confirmation stamp ── */}
+            {/* ── Green confirmation stamp ── */}
             <View style={styles.stamp}>
                 <Text style={styles.stampEmoji}>✅</Text>
                 <View>
@@ -276,10 +316,10 @@ const ReceiptDocument = ({ data }) => (
                 </View>
             </View>
 
-            {/* ── Divider ── */}
+            {/* ── Divider line ── */}
             <View style={styles.divider} />
 
-            {/* ── Instructions ── */}
+            {/* ── Instructions for the student ── */}
             <View style={styles.instructions}>
                 <Text style={styles.instructionText}>
                     • Present your student ID along with this receipt at the porter's
@@ -293,7 +333,7 @@ const ReceiptDocument = ({ data }) => (
                 </Text>
             </View>
 
-            {/* ── Footer ── */}
+            {/* ── Footer (at the very bottom of the page) ── */}
             <View style={styles.footer}>
                 <Text style={styles.footerText}>
                     HostelMS — Babcock University Hostel Management System
@@ -307,4 +347,5 @@ const ReceiptDocument = ({ data }) => (
     </Document>
 );
 
+// Export so it can be used in reciept.jsx and AdminReports.jsx
 export default ReceiptDocument;

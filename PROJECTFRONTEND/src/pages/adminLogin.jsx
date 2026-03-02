@@ -27,7 +27,7 @@ function AdminLogin() {
 
         try {
             await loginadmin(email, password);
-            navigate("/admindashboard");
+            navigate("/admin");
         } catch (err) {
             setError("Login failed. Check your email or password.");
         } finally {
@@ -235,8 +235,8 @@ function AdminLogin() {
                             type="submit"
                             disabled={loading}
                             className={`w-full py-3.5 text-white border-none rounded-lg text-[13px] font-bold tracking-wider uppercase transition-colors duration-200 ${loading
-                                    ? "bg-[#4a6fa5] cursor-not-allowed"
-                                    : "bg-[#1e3a6e] cursor-pointer hover:bg-[#162d57]"
+                                ? "bg-[#4a6fa5] cursor-not-allowed"
+                                : "bg-[#1e3a6e] cursor-pointer hover:bg-[#162d57]"
                                 }`}
                         >
                             {loading ? "Verifying..." : "Sign In →"}

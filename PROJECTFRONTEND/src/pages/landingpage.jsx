@@ -1,20 +1,36 @@
-// src/pages/LandingPage.jsx
-// Pure inline styles — no Tailwind dependency, nothing squishes.
-// onEnter()           → role picker  (Get Started, nav, footer, CTA)
-// onEnter("student")  → student form (portal card)
-// onEnter("admin")    → admin form   (portal card)
-
+// ==================================================
+// LANDINGPAGE.JSX — The Home Page / Marketing Page
+// ==================================================
+// This is the FIRST page visitors see when they open the app.
+// It uses pure inline styles (no Tailwind) for maximum control.
+//
+// PAGE SECTIONS (from top to bottom):
+//   1. NAV — Fixed navigation bar at the top (HostelMS logo + Sign In button)
+//   2. HERO — Big headline "Hostel allocation, automated." with CTA buttons
+//   3. HOW IT WORKS — 4-step process: Pay → Algorithm → Assigned → Receipt
+//   4. FEATURES — 6 feature cards mapped to the project's research objectives
+//   5. STATS — Navy blue bar showing system metrics (4 rules, <2s, 100%, Live)
+//   6. TWO PORTALS — Student and Admin sign-in cards side by side
+//   7. FINAL CTA — "Ready to get your room?" call to action
+//   8. FOOTER — Simple footer with branding and session info
+//
+// All navigation uses React Router's <Link> component for client-side routing.
 
 import { Link } from "react-router-dom"
 import React from "react";
 
-const NAVY = "#1e3a6e";
-const NAVY_D = "#152d57";
+// ─── Color Constants ───
+const NAVY = "#1e3a6e";     // Main navy brand color
+const NAVY_D = "#152d57";   // Darker navy for footer
+
+// Grid pattern background (used as a subtle texture overlay)
 const GRID = {
   backgroundImage: "linear-gradient(rgba(255,255,255,0.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.12) 1px,transparent 1px)",
   backgroundSize: "36px 36px",
 };
 
+// ─── Feature data (shown in the Features section) ───
+// Each feature maps to a project research objective
 const FEATURES = [
   { icon: "⚡", tag: "Objective 1", title: "Rule-Based Allocation Engine", desc: "A four-rule algorithm assigns rooms by verifying payment, matching gender, checking real-time availability, and applying best-fit selection — zero manual work." },
   { icon: "🔄", tag: "Objective 2", title: "Real-Time Database Sync", desc: "Every allocation instantly updates room occupancy across the system. Admins and students always see live, accurate data — no refresh needed." },
@@ -24,6 +40,7 @@ const FEATURES = [
   { icon: "🏠", tag: "Admin", title: "Multi-Hall Room Management", desc: "Admins manage all hostel halls, blocks, and rooms from one console. Toggle maintenance, eject occupants, and add new rooms instantly." },
 ];
 
+// ─── Steps data (shown in the "How It Works" section) ───
 const STEPS = [
   { step: "01", title: "Student Pays", desc: "Student pays the hostel fee. The admin verifies and marks the payment confirmed in the system." },
   { step: "02", title: "Algorithm Runs", desc: "The rule-based engine checks payment, matches gender to the correct hall, confirms availability, and selects the best-fit room." },
@@ -31,6 +48,7 @@ const STEPS = [
   { step: "04", title: "Receipt Delivered", desc: "A secure e-receipt with a unique transaction reference is generated and sent to both student and hall administrator." },
 ];
 
+// ─── Stats data (shown in the navy stats bar) ───
 const STATS = [
   { value: "4", label: "Allocation Rules", sub: "Payment · Gender · Availability · Best-Fit" },
   { value: "< 2s", label: "Receipt Delivery", sub: "Instant e-receipt on allocation confirm" },
@@ -38,18 +56,25 @@ const STATS = [
   { value: "Live", label: "Occupancy Tracking", sub: "Real-time updates across all halls" },
 ];
 
+// ==================================================
+// LANDING PAGE COMPONENT
+// ==================================================
 export default function LandingPage() {
   return (
     <div style={{ fontFamily: "Inter, sans-serif", color: "#0f172a", background: "#F5F5F5", minHeight: "100vh", overflowX: "hidden" }}>
 
-      {/* ── NAV ──────────────────────────────────────────────────────────────── */}
+      {/* ── NAV — Fixed navigation bar at the very top ──
+          Contains the HostelMS logo and a "Sign In" button */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, background: NAVY, height: 64 }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", ...GRID }} />
         <div style={{ position: "relative", maxWidth: 1152, margin: "0 auto", padding: "0 32px", height: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>🏠</div>
             <span style={{ fontWeight: 700, fontSize: 18, color: "#fff", letterSpacing: "-0.01em" }}>HostelMS</span>
           </div>
+
+          {/* Navigation links (scroll to sections) */}
           <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
             {[["#how-it-works", "How It Works"], ["#features", "Features"], ["#stats", "System Stats"]].map(([href, lbl]) => (
               <a key={href} href={href} style={{ color: "#bfdbfe", fontSize: 12, fontWeight: 500, textDecoration: "none", letterSpacing: "0.02em" }}
@@ -58,6 +83,7 @@ export default function LandingPage() {
             ))}
           </div>
 
+          {/* Sign In button (navigates to login page) */}
           <Link to="/LoginPage" style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", padding: "10px 20px", borderRadius: 8, border: "none", cursor: "pointer" }}>
 
             Sign In →
@@ -66,26 +92,29 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────────── */}
+      {/* ── HERO — Big headline section with CTAs ──
+          This is the first thing visitors see */}
       <section style={{ background: NAVY, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", paddingTop: 64 }}>
+        {/* Grid texture overlay */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.07) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
+        {/* Blurred blue glow effect */}
         <div style={{ position: "absolute", top: "30%", left: "50%", transform: "translateX(-50%)", width: 700, height: 700, borderRadius: "50%", background: "rgba(96,165,250,0.1)", filter: "blur(130px)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", padding: "80px 32px", textAlign: "center" }}>
 
-          {/* Eyebrow */}
+          {/* Session badge */}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 999, padding: "8px 20px", marginBottom: 32 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#fff", display: "inline-block" }} />
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#dbeafe" }}>2025/2026 Academic Session</span>
           </div>
 
-          {/* Headline */}
+          {/* Main headline */}
           <h1 style={{ fontSize: "clamp(2.5rem,6vw,4.2rem)", fontWeight: 800, color: "#fff", lineHeight: 1.06, letterSpacing: "-0.02em", marginBottom: 24 }}>
             Hostel allocation,{" "}
             <span style={{ color: "#bfdbfe", textDecoration: "underline", textDecorationColor: "rgba(255,255,255,0.3)", textUnderlineOffset: 6 }}>automated.</span>
           </h1>
 
-          {/* Sub */}
+          {/* Subtitle text */}
           <p style={{ fontSize: 17, color: "#bfdbfe", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 40px" }}>
             HostelMS assigns rooms based on{" "}
             <span style={{ color: "#fff", fontWeight: 600 }}>payment status</span>,{" "}
@@ -94,11 +123,8 @@ export default function LandingPage() {
             — then instantly delivers a secure e-receipt to both student and administrator.
           </p>
 
-          {/* CTAs */}
+          {/* CTA buttons: "Get Started" and "See How It Works" */}
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 40 }}>
-            {/* Get Started → role picker */}
-
-
             <Link to="/LoginPage" style={{ background: "#fff", color: NAVY, fontWeight: 700, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", padding: "16px 40px", borderRadius: 10, border: "none", cursor: "pointer", boxShadow: "0 4px 24px rgba(0,0,0,0.2)" }}
               onMouseEnter={e => e.currentTarget.style.background = "#F0F4FF"}
               onMouseLeave={e => e.currentTarget.style.background = "#fff"}>
@@ -113,7 +139,7 @@ export default function LandingPage() {
             </a>
           </div>
 
-          {/* Scroll hint */}
+          {/* Scroll indicator */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, opacity: 0.35, marginTop: 16 }}>
             <span style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#bfdbfe" }}>Scroll</span>
             <div style={{ width: 1, height: 40, background: "linear-gradient(to bottom, rgba(191,219,254,0.6), transparent)" }} />
@@ -121,7 +147,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────────────── */}
+      {/* ── HOW IT WORKS — 4-step process ──
+          Shows the allocation flow: Pay → Algorithm → Assigned → Receipt */}
       <section id="how-it-works" style={{ background: "#fff", padding: "96px 0" }}>
         <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -133,6 +160,7 @@ export default function LandingPage() {
             From payment to room key — the entire allocation process happens in four automated steps.
           </p>
 
+          {/* 4 step cards in a grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
             {STEPS.map((s) => (
               <div key={s.step} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 12px" }}>
@@ -150,7 +178,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FEATURES ─────────────────────────────────────────────────────────── */}
+      {/* ── FEATURES — 6 feature cards ──
+          Each card maps to a research objective */}
       <section id="features" style={{ background: "#F5F5F5", borderTop: "1px solid #E2E8F0", padding: "96px 0" }}>
         <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -162,6 +191,7 @@ export default function LandingPage() {
             <p style={{ fontSize: 14, color: "#64748b", maxWidth: 340, lineHeight: 1.7 }}>Every feature maps directly to the system's research objectives — no bloat, no fluff.</p>
           </div>
 
+          {/* Feature cards grid (3 columns) */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {FEATURES.map((f) => (
               <div key={f.title}
@@ -178,7 +208,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── STATS ────────────────────────────────────────────────────────────── */}
+      {/* ── STATS — Navy statistics bar ──
+          Shows key system numbers in a grid */}
       <section id="stats" style={{ background: NAVY, padding: "72px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", ...GRID }} />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 1152, margin: "0 auto", padding: "0 32px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
@@ -192,7 +223,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TWO PORTALS ──────────────────────────────────────────────────────── */}
+      {/* ── TWO PORTALS — Student and Admin sign-in cards ──
+          Shows two cards side by side: one for students, one for admins */}
       <section style={{ background: "#fff", borderTop: "1px solid #E2E8F0", padding: "96px 0" }}>
         <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 32px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -203,7 +235,7 @@ export default function LandingPage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
 
-            {/* Student card */}
+            {/* Student Portal card (light background) */}
             <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 20, padding: 40, transition: "all 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = `${NAVY}40`; e.currentTarget.style.boxShadow = "0 4px 20px rgba(30,58,110,0.08)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "none"; }}>
@@ -212,6 +244,7 @@ export default function LandingPage() {
               <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, marginBottom: 28 }}>
                 Log in, browse available halls filtered by your gender, request your room allocation, and download your official e-receipt — all in one place.
               </p>
+              {/* Feature list */}
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px" }}>
                 {["View all available halls and rooms", "One-click room allocation request", "Real-time payment status indicator", "Downloadable PDF e-receipt", "Roommate information display"].map(item => (
                   <li key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, marginBottom: 10 }}>
@@ -221,10 +254,10 @@ export default function LandingPage() {
                 ))}
               </ul>
 
+              {/* Student Sign In button */}
               <Link to="/studentlogin" className="btn btn-primary btn-lg"
                 onMouseEnter={e => { e.currentTarget.style.background = NAVY; e.currentTarget.style.color = "#fff"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = NAVY; }}
-
                 style={{ width: "100%", padding: "12px 0", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 8, border: `2px solid ${NAVY}`, color: NAVY, background: "transparent", cursor: "pointer", transition: "all 0.2s" }}
               >
                 Student Sign In →
@@ -232,10 +265,11 @@ export default function LandingPage() {
 
             </div>
 
-            {/* Admin card */}
+            {/* Admin Console card (dark navy background) */}
             <div style={{ background: NAVY, borderRadius: 20, padding: 40, position: "relative", overflow: "hidden", transition: "box-shadow 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 8px 40px rgba(30,58,110,0.35)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
+              {/* Grid pattern overlay */}
               <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.06) 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
               <div style={{ position: "absolute", top: 0, right: 0, width: 120, height: 120, borderRadius: "0 20px 0 100%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
               <div style={{ position: "relative", zIndex: 1 }}>
@@ -244,6 +278,7 @@ export default function LandingPage() {
                 <p style={{ fontSize: 14, color: "#bfdbfe", lineHeight: 1.7, marginBottom: 28 }}>
                   A full management dashboard to oversee rooms, students, payments, and reports — with complete control over the allocation engine and system settings.
                 </p>
+                {/* Feature list */}
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px" }}>
                   {["Live occupancy dashboard with KPIs", "Room inventory — add, edit, set maintenance", "Student records with payment verification", "Analytics, effectiveness metrics & reports", "Configurable allocation rules & settings"].map(item => (
                     <li key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13, marginBottom: 10 }}>
@@ -253,7 +288,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-
+                {/* Admin Sign In button */}
                 <Link to="/adminlogin" className="btn btn-primary btn-lg"
                   style={{ width: "100%", padding: "12px 0", fontWeight: 700, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", borderRadius: 8, border: "none", background: "#fff", color: NAVY, cursor: "pointer", transition: "background 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "#F0F4FF"}
@@ -266,11 +301,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ────────────────────────────────────────────────────────── */}
+      {/* ── FINAL CTA — "Ready to get your room?" ──
+          A big call-to-action section before the footer */}
       <section style={{ background: NAVY, padding: "112px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.06) 1px,transparent 1px)", backgroundSize: "40px 40px" }} />
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "rgba(96,165,250,0.08)", filter: "blur(120px)", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1, maxWidth: 680, margin: "0 auto", padding: "0 32px", textAlign: "center" }}>
+          {/* "System Active" badge */}
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 999, padding: "8px 20px", marginBottom: 28 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block" }} />
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#dbeafe" }}>System Active</span>
@@ -280,26 +317,26 @@ export default function LandingPage() {
             Sign in with your matric number to browse available halls, request your allocation, and receive your official e-receipt instantly.
           </p>
 
-
           <p style={{ fontSize: 11, color: "rgba(191,219,254,0.5)", marginTop: 16 }}>No registration needed · Use your existing matric number</p>
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
+      {/* ── FOOTER — Simple branding footer ── */}
       <footer style={{ background: NAVY_D, padding: "36px 0" }}>
         <div style={{ maxWidth: 1152, margin: "0 auto", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          {/* Left: logo and system name */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🏠</div>
             <span style={{ fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>HostelMS</span>
             <span style={{ color: "rgba(255,255,255,0.2)", margin: "0 4px" }}>·</span>
             <span style={{ fontSize: 12, color: "#bfdbfe" }}>Automated Hostel Allocation System</span>
           </div>
+          {/* Right: session info and sign in link */}
           <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 12, color: "#bfdbfe" }}>
             <span>2025/2026 Session</span>
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
             <span>Final Year Project</span>
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-
 
             <Link to="/LoginPage" style={{ background: "none", border: "none", color: "#bfdbfe", cursor: "pointer", fontSize: 12, padding: 0 }}
               onMouseEnter={e => e.target.style.color = "#fff"}
