@@ -1,448 +1,535 @@
 // ==================================================
 // STUDENTDASHBOARD.JSX - Student's personal dashboard
 // ==================================================
-// This is where students see their information after logging in
-// Think of it like your personal profile page that shows:
-// - Your details (name, matric number, etc.)
-// - Your payment status
-// - Your assigned room (if you have one)
-// - Available halls to choose from (if you don't have a room yet)
+// Tailwind-styled dashboard matching the HostelMS theme.
+// All original functionality preserved:
+//   - getStudentDashboard API call on mount
+//   - Hall selection with getAvailableRooms
+//   - Room booking with bookRoom
+//   - Block tabs for room filtering
+//   - Receipt navigation
+//   - Logout
 
 import { getStudentDashboard } from "../services/auth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { bookRoom, getAvailableRooms } from "../services/auth";
 
+// ─── Occupancy bar helper ─────────────────────────────────────────────────────
+function OccBar({ current, capacity }) {
+    const pct = capacity ? Math.round((current / capacity) * 100) : 0;
+    const col =
+        pct >= 100
+            ? "bg-red-500"
+            : pct > 85
+                ? "bg-amber-500"
+                : pct > 75
+                    ? "bg-blue-600"
+                    : "bg-green-500";
+    return (
+        <div className="bg-slate-200 rounded-sm h-1.5 mt-1.5">
+            <div
+                className={`h-full rounded-sm transition-all duration-500 ${col}`}
+                style={{ width: `${Math.min(pct, 100)}%` }}
+            />
+        </div>
+    );
+}
+
 // ==================================================
 // STUDENT DASHBOARD COMPONENT
 // ==================================================
 function StudentDashboard() {
     // ===== STATE VARIABLES =====
-    // These are like boxes that hold information while the page is running
-
-    // dashboardData: Holds all the student's information from the server
     const [dashboardData, setDashboardData] = useState(null);
-
-    // loading: Shows whether we're currently fetching data (true = loading, false = done)
     const [loading, setLoading] = useState(true);
-
-    // error: Holds any error messages if something goes wrong
     const [error, setError] = useState(null);
-
-    // selectedHall: Which hall the student clicked on (null = showing hall list)
     const [selectedHall, setSelectedHall] = useState(null);
-
-    // rooms: Available rooms for the selected hall
     const [rooms, setRooms] = useState([]);
-
-    // roomsLoading: Whether we're fetching rooms
     const [roomsLoading, setRoomsLoading] = useState(false);
-
-    // selectedBlock: Which block tab is active (e.g. "A", "B", "C")
     const [selectedBlock, setSelectedBlock] = useState(null);
-
-    // navigate: A tool to move between different pages
+    const [toast, setToast] = useState(null);
+    const [activeTab, setActiveTab] = useState("halls");
     const navigate = useNavigate();
 
+    const triggerToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 4000);
+    };
+
     // ===== LOAD DATA WHEN PAGE OPENS =====
-    // useEffect runs automatically when the page loads
     useEffect(() => {
-        // Function to load the dashboard data
         const loadData = async () => {
             try {
-                // Step 1: Check if the student is logged in
-                const userString = localStorage.getItem('user');
-
-                // If no login info found, send them to login page
+                const userString = localStorage.getItem("user");
                 if (!userString) {
-                    navigate('/studentlogin')
-                    return
+                    navigate("/studentlogin");
+                    return;
                 }
-
-                // Step 2: Get the student's login info from storage
                 const user = JSON.parse(userString);
-
-                // Step 3: Get the student's matric number (could be named differently)
-                const matricparm = user.matriculation_number || user.matric_number
-
-                // Step 4: Fetch the dashboard data from the server
+                const matricparm = user.matriculation_number || user.matric_number;
                 const data = await getStudentDashboard(matricparm);
-
-                // Step 5: Store the data and stop showing "loading"
                 setDashboardData(data);
                 setLoading(false);
-
             } catch (error) {
-                // If something went wrong, show error message
                 console.error("Dashboard Error:", error);
-                setError("Failed to load dashboard data.");  // Set error message
-                setLoading(false);  // Stop showing "loading"
-
-                // If error is "unauthorized" (401), send them to login
+                setError("Failed to load dashboard data.");
+                setLoading(false);
                 if (error.response && error.response.status === 401) {
-                    navigate('/studentlogin')
+                    navigate("/studentlogin");
                 }
             }
         };
-
-        // Call the loadData function
         loadData();
-    }, [navigate])  // Run this when the page loads
+    }, [navigate]);
 
     // ===== LOGOUT FUNCTION =====
-    // This runs when the student clicks the "Logout" button
     const handleLogout = () => {
-        // Step 1: Remove their login info from browser storage
-        localStorage.removeItem('user');
-
-        // Step 2: Send them back to the login page
-        navigate('/studentlogin');
+        localStorage.removeItem("user");
+        navigate("/studentlogin");
     };
 
     // ===== LOADING & ERROR STATES =====
-    // If still loading, show "Loading..." message
-    if (loading) return <div className="loading-container">Loading Dashboard...</div>;
+    if (loading)
+        return (
+            <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center font-sans">
+                <div className="text-center">
+                    <div className="w-10 h-10 border-4 border-[#1e3a6e] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-slate-500 text-sm font-medium">
+                        Loading Dashboard...
+                    </p>
+                </div>
+            </div>
+        );
 
-    // If there's an error, show the error message
-    if (error) return <div className="loading-container text-error">{error}</div>;
+    if (error)
+        return (
+            <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center font-sans">
+                <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-8 py-6 text-center max-w-md">
+                    <div className="text-3xl mb-3">⚠</div>
+                    <p className="font-semibold text-lg mb-1">Error</p>
+                    <p className="text-sm">{error}</p>
+                </div>
+            </div>
+        );
 
-    // If no data, don't show anything
     if (!dashboardData) return null;
 
     // ===== EXTRACT DATA =====
-    // Get the profile and available halls from the dashboard data
     const { profile, available_halls } = dashboardData;
     const { room_details } = profile;
 
-
     // ===== HANDLE SELECTING A HALL =====
-    // When a student clicks "Select" on a hall, fetch its available rooms
     const handleSelectHall = async (hall) => {
         try {
-            setRoomsLoading(true)
-            setSelectedHall(hall)
-            const roomData = await getAvailableRooms(hall.hall_id)
-            setRooms(roomData)
+            setRoomsLoading(true);
+            setSelectedHall(hall);
+            const roomData = await getAvailableRooms(hall.hall_id);
+            setRooms(roomData);
         } catch (error) {
-            console.error("Error fetching rooms:", error)
-            alert("Failed to load rooms. Please try again.")
-            setSelectedHall(null)
+            console.error("Error fetching rooms:", error);
+            alert("Failed to load rooms. Please try again.");
+            setSelectedHall(null);
         } finally {
-            setRoomsLoading(false)
+            setRoomsLoading(false);
         }
-    }
+    };
 
     // ===== HANDLE ROOM BOOKING =====
-    // This function runs when a student clicks "Book" on a specific room
     const handleBooking = async (hall_id, room_id, roomNumber) => {
-        // Step 1: Ask for confirmation
-        if (!window.confirm(`Are you sure you want to book Room ${roomNumber} in ${selectedHall.hall_name}?`)) {
-            return
+        if (
+            !window.confirm(
+                `Are you sure you want to book Room ${roomNumber} in ${selectedHall.hall_name}?`
+            )
+        ) {
+            return;
         }
 
         try {
-            // Step 2: Show loading while booking
-            setLoading(true)
-
-            // Step 3: Get the student's matric number
-            const user = JSON.parse(localStorage.getItem("user"))
-            const matricparm = user.matriculation_number || user.matric_number
-
-            // Step 4: Send the booking request with the specific room
+            setLoading(true);
+            const user = JSON.parse(localStorage.getItem("user"));
+            const matricparm = user.matriculation_number || user.matric_number;
             await bookRoom(matricparm, hall_id, room_id);
-
-            // Step 5: Show success message
-            alert("Room Booked Successfully")
-
-            // Step 6: Clear selection and refresh dashboard
-            setSelectedHall(null)
-            setRooms([])
+            triggerToast("Room Booked Successfully! 🎉");
+            setSelectedHall(null);
+            setRooms([]);
             const updateData = await getStudentDashboard(matricparm);
             setDashboardData(updateData);
-
         } catch (error) {
-            console.error(error)
-            alert(error.response?.data?.error || "Failed to book room")
+            console.error(error);
+            alert(error.response?.data?.error || "Failed to book room");
+        } finally {
+            setLoading(false);
         }
-        finally {
-            setLoading(false)
-        }
-    }
+    };
 
     return (
-        // Main container for the entire dashboard
-        <div style={{ minHeight: '100vh', padding: 'var(--spacing-lg)', backgroundColor: 'var(--color-bg)' }}>
-            {/* Centered content wrapper */}
-            <div className="content-wrapper">
-                {/* ===== HEADER SECTION ===== */}
-                {/* This shows the student's name and a logout button */}
-                <div className="card" style={{ marginBottom: 'var(--spacing-lg)' }}>
-                    {/* Header with welcome message and logout button */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
-                        {/* Welcome message with student's name */}
-                        <h1 style={{ marginBottom: '0' }}>Welcome, {profile.full_name}</h1>
+        <div className="min-h-screen bg-[#F5F5F5] font-sans text-slate-900">
+            {/* Toast notification */}
+            {toast && (
+                <div className="fixed top-6 right-6 z-[9999] bg-[#1e3a6e] text-white px-6 py-3 rounded-lg font-semibold text-xs tracking-wide shadow-[0_8px_32px_rgba(30,58,110,0.3)] animate-[slideIn_0.3s_ease] max-w-[360px]">
+                    ✓ {toast}
+                </div>
+            )}
 
-                        {/* Logout button */}
-                        <button onClick={handleLogout} className="btn btn-secondary btn-sm">
-                            Logout
-                        </button>
+            {/* ── NAV ──────────────────────────────────────────────────────────── */}
+            <nav className="bg-[#1e3a6e] h-16 flex items-center justify-between px-6 md:px-9 sticky top-0 z-40 shrink-0 relative">
+                {/* Grid texture */}
+                <div
+                    className="absolute inset-0 opacity-5 pointer-events-none"
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)",
+                        backgroundSize: "32px 32px",
+                    }}
+                />
+                {/* Left: logo */}
+                <div className="relative z-10 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/[0.18] border border-white/[0.22] flex items-center justify-center">
+                        🏠
                     </div>
+                    <span className="text-white font-bold text-lg tracking-tight">
+                        HostelMS
+                    </span>
+                    <span className="text-[9px] font-semibold tracking-widest uppercase px-2.5 py-[3px] rounded bg-white/[0.12] border border-white/[0.18] text-blue-100">
+                        Student Portal
+                    </span>
+                </div>
+                {/* Right: payment badge + avatar/logout */}
+                <div className="relative z-10 flex items-center gap-3.5">
+                    {/* Payment badge */}
+                    <div
+                        className={`flex items-center gap-1.5 px-3 py-[5px] rounded-md border ${profile.payment_status === "Verified"
+                            ? "bg-green-400/[0.15] border-green-400/[0.35]"
+                            : "bg-red-400/[0.15] border-red-400/[0.35]"
+                            }`}
+                    >
+                        <div
+                            className={`w-1.5 h-1.5 rounded-full ${profile.payment_status === "Verified"
+                                ? "bg-green-400"
+                                : "bg-red-400"
+                                }`}
+                        />
+                        <span
+                            className={`text-[10px] font-semibold tracking-wider ${profile.payment_status === "Verified"
+                                ? "text-green-400"
+                                : "text-red-400"
+                                }`}
+                        >
+                            {profile.payment_status === "Verified"
+                                ? "PAYMENT VERIFIED"
+                                : "PAYMENT PENDING"}
+                        </span>
+                    </div>
+                    {/* Logout button */}
+                    <button
+                        onClick={handleLogout}
+                        title="Sign out"
+                        className="w-[34px] h-[34px] rounded-full bg-white/20 border border-white/25 flex items-center justify-center text-xs font-bold text-white cursor-pointer"
+                    >
+                        {profile.full_name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                    </button>
+                </div>
+            </nav>
 
-                    {/* Student's basic information in a grid */}
-                    <div className="grid grid-2" style={{ fontSize: 'var(--font-size-sm)' }}>
-                        {/* Matric number */}
-                        <p><strong>Matric No:</strong> {profile.matriculation_number}</p>
-
-                        {/* Department */}
-                        <p><strong>Department:</strong> {profile.department}</p>
-
-                        {/* Level (year) */}
-                        <p><strong>Level:</strong> {profile.level}</p>
-
-                        {/* Payment status with color badge */}
-                        <p>
-                            <strong>Payment Status: </strong>
-                            {/* Green badge if verified, red if not */}
-                            <span className={profile.payment_status === 'Verified' ? 'badge badge-success' : 'badge badge-error'}>
-                                {profile.payment_status}
-                            </span>
-                        </p>
+            {/* ── Main content ─────────────────────────────────────────────────── */}
+            <div className="px-6 md:px-9 py-8 max-w-[1100px] mx-auto">
+                {/* ── Profile card ─────────────────────────────────────────────────── */}
+                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 md:p-7 flex flex-col md:flex-row justify-between items-start md:items-center mb-7 gap-4">
+                    {/* Left: avatar + info */}
+                    <div className="flex items-center gap-4">
+                        <div className="w-[52px] h-[52px] rounded-full bg-blue-50 border-2 border-blue-400 flex items-center justify-center text-[22px]">
+                            👨
+                        </div>
+                        <div>
+                            <div className="text-[10px] text-slate-500 tracking-widest uppercase font-semibold mb-1">
+                                Student
+                            </div>
+                            <div className="text-[22px] font-extrabold text-slate-900 tracking-tight mb-[3px]">
+                                {profile.full_name}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                                {profile.matriculation_number} · {profile.department} ·{" "}
+                                {profile.level}
+                            </div>
+                        </div>
+                    </div>
+                    {/* Right: allocation status */}
+                    <div className="md:text-right">
+                        <div className="text-[10px] text-slate-500 tracking-widest uppercase font-semibold mb-2.5">
+                            Allocation Status
+                        </div>
+                        {room_details ? (
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-green-50 border border-green-200 text-[11px] text-green-600 font-semibold tracking-wider mb-1.5">
+                                    ✓ ALLOCATED
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                    {room_details.hall_name} · Room {room_details.room_number}
+                                </div>
+                            </div>
+                        ) : (
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-amber-50 border border-amber-200 text-[11px] text-amber-500 font-semibold tracking-wider mb-2.5">
+                                    PENDING ALLOCATION
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* ===== MAIN CONTENT SECTION ===== */}
-                {/* This shows different things depending on the student's situation */}
-                <div className="card">
-                    {/* There are 3 possible scenarios: */}
-
-                    {/* SCENARIO A: Student HAS a room already */}
-                    {room_details ? (
-                        // Show their room details
-                        <div className="text-center">
-                            {/* Header */}
-                            <div style={{
-                                borderLeft: '4px solid var(--color-success)',
-                                paddingLeft: 'var(--spacing-lg)',
-                                marginBottom: 'var(--spacing-lg)'
-                            }}>
-                                <h2 style={{ color: 'var(--color-success)' }}>Allocated Room</h2>
-                                <p style={{ fontSize: 'var(--font-size-lg)' }}>You have been assigned to:</p>
+                {/* ── Payment blocked banner ────────────────────────────────────────── */}
+                {profile.payment_status !== "Verified" && (
+                    <div className="bg-red-50 border border-red-200 rounded-[10px] px-6 py-[18px] mb-6 flex items-center gap-4">
+                        <span className="text-[26px]">🔒</span>
+                        <div>
+                            <div className="text-sm font-bold text-red-600 mb-1">
+                                Room Allocation Blocked
                             </div>
-
-                            {/* Display the hall and room number in a nice box */}
-                            <div style={{
-                                padding: 'var(--spacing-xl)',
-                                background: '#f0fdf4',  // Light green background
-                                borderRadius: 'var(--radius-lg)',
-                                display: 'inline-block',
-                                minWidth: '300px'
-                            }}>
-                                {/* Hall name */}
-                                <p style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', marginBottom: 'var(--spacing-sm)' }}>
-                                    {room_details.hall_name}
-                                </p>
-
-                                {/* Room number (big and bold) */}
-                                <p style={{
-                                    fontSize: 'var(--font-size-4xl)',
-                                    fontWeight: '700',
-                                    color: 'var(--color-primary)',
-                                    marginBottom: '0'
-                                }}>
-                                    {room_details.room_number}
-                                </p>
+                            <div className="text-xs text-slate-500 leading-relaxed">
+                                Your hostel payment has not been verified. Please visit the
+                                bursar's office or pay via the school portal, then return here.
                             </div>
-
-                            {/* Instructions */}
-                            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--spacing-lg)' }}>
-                                Please present this ticket at the porter's lodge.
-                            </p>
-
-                            {/* Button to view/print official receipt */}
-                            <button
-                                onClick={() => navigate('/reciept')}
-                                className="btn btn-primary"
-                                style={{ marginTop: 'var(--spacing-md)' }}
-                            >
-                                View Official Receipt
-                            </button>
                         </div>
-                    )
+                    </div>
+                )}
 
-                        /* SCENARIO B: Payment NOT verified */
-                        : profile.payment_status !== 'Verified' ? (
-                            // Tell them to pay or wait for verification
-                            <div className="text-center" style={{ padding: 'var(--spacing-xl)' }}>
-                                <h2 className="text-error">Action Required</h2>
-                                <p>Your school fees payment has not been verified yet.</p>
-                                <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)' }}>
-                                    Please contact the bursary or wait for verification.
-                                </p>
+                {/* ── TAB NAVIGATION ────────────────────────────────────────────── */}
+                <div className="flex border-b border-slate-200 mb-7 bg-white rounded-t-[10px]">
+                    {[["halls", "Available Halls"], ["myroom", "My Room"], ["receipt", "E-Receipt"]].map(([key, label]) => (
+                        <button
+                            key={key}
+                            onClick={() => setActiveTab(key)}
+                            className={`px-6 py-3.5 bg-transparent border-none text-xs tracking-wide cursor-pointer -mb-px transition-all duration-200 ${activeTab === key
+                                    ? "border-b-2 border-[#1e3a6e] text-[#1e3a6e] font-semibold"
+                                    : "text-slate-500 font-normal border-b-2 border-transparent"
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* ── TAB: Available Halls ──────────────────────────────────────── */}
+                {activeTab === "halls" && (
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+                        {profile.payment_status !== "Verified" ? (
+                            <div className="p-12 text-center">
+                                <div className="text-[44px] mb-4">🔒</div>
+                                <h2 className="text-xl font-extrabold text-red-600 mb-2">Action Required</h2>
+                                <p className="text-sm text-slate-900 mb-2">Your school fees payment has not been verified yet.</p>
+                                <p className="text-xs text-slate-500">Please contact the bursary or wait for verification.</p>
                             </div>
-                        )
-
-                            /* SCENARIO C: Payment verified but NO room yet */
-                            : (
-                                <div>
-                                    {/* If no hall is selected yet, show the hall list */}
-                                    {!selectedHall ? (
-                                        <>
-                                            {/* Header: "Select a Hall" */}
-                                            <h2 style={{ color: 'var(--color-primary)', marginBottom: 'var(--spacing-lg)' }}>
-                                                Select a Hall
-                                            </h2>
-
-                                            {/* Check if there are any halls available */}
-                                            {available_halls.length === 0 ? (
-                                                <p className="text-error">No halls are currently available for your gender.</p>
-                                            ) : (
-                                                <div className="grid grid-2">
-                                                    {available_halls.map((hall) => (
-                                                        <div
-                                                            key={hall.hall_id}
-                                                            style={{
-                                                                border: '2px solid var(--color-border)',
-                                                                borderRadius: 'var(--radius-lg)',
-                                                                padding: 'var(--spacing-lg)',
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'center',
-                                                                transition: 'all var(--transition-base)',
-                                                                cursor: 'pointer'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                                                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                e.currentTarget.style.boxShadow = 'none';
-                                                                e.currentTarget.style.transform = 'translateY(0)';
-                                                            }}
-                                                        >
-                                                            <div>
-                                                                <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
-                                                                    {hall.hall_name}
-                                                                </h3>
-                                                                <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)', marginBottom: '0' }}>
-                                                                    {hall.available_rooms} rooms left
-                                                                </p>
-                                                            </div>
-                                                            <button
-                                                                className="btn btn-primary"
-                                                                onClick={() => handleSelectHall(hall)}
-                                                            >
-                                                                Select
-                                                            </button>
+                        ) : room_details ? (
+                            <div className="p-12 text-center">
+                                <div className="text-[44px] mb-4">✅</div>
+                                <h2 className="text-xl font-extrabold text-green-600 mb-2">Already Allocated</h2>
+                                <p className="text-sm text-slate-900 mb-2">You have already been assigned to <strong>{room_details.hall_name} — Room {room_details.room_number}</strong>.</p>
+                                <p className="text-xs text-slate-500">Check the "My Room" or "E-Receipt" tabs for details.</p>
+                            </div>
+                        ) : (
+                            <div className="p-6 md:p-8">
+                                {!selectedHall ? (
+                                    <div>
+                                        <div className="mb-5">
+                                            <h2 className="text-[22px] font-extrabold text-[#1e3a6e] tracking-tight mb-1">Select a Hall</h2>
+                                            <p className="text-[13px] text-slate-500">Choose a hostel hall to view available rooms</p>
+                                        </div>
+                                        {available_halls.length === 0 ? (
+                                            <div className="bg-white border border-slate-200 rounded-xl p-14 text-center text-slate-500">No halls are currently available for your gender.</div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                                {available_halls.map((hall) => (
+                                                    <div key={hall.hall_id} className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                                                        <div className="flex-1">
+                                                            <div className="text-base font-bold text-slate-900 mb-[3px]">{hall.hall_name}</div>
+                                                            <div className="text-xs text-slate-500 mb-2.5">{hall.available_rooms} room{hall.available_rooms !== 1 ? "s" : ""} left</div>
+                                                            <OccBar current={0} capacity={hall.available_rooms > 0 ? 1 : 0} />
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        /* Hall is selected — show the room picker */
-                                        <>
-                                            {/* Header with back button */}
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-lg)' }}>
-                                                <button
-                                                    className="btn btn-secondary btn-sm"
-                                                    onClick={() => { setSelectedHall(null); setRooms([]); setSelectedBlock(null); }}
-                                                >
-                                                    ← Back to Halls
-                                                </button>
-                                                <h2 style={{ color: 'var(--color-primary)', marginBottom: '0' }}>
-                                                    {selectedHall.hall_name} — Pick a Room
-                                                </h2>
+                                                        <button onClick={() => handleSelectHall(hall)} className="bg-[#1e3a6e] text-white border-none rounded-lg px-5 py-2.5 text-[13px] font-bold cursor-pointer shrink-0 tracking-wide hover:bg-[#162d57] transition-colors">Select</button>
+                                                    </div>
+                                                ))}
                                             </div>
-
-                                            {roomsLoading ? (
-                                                <div className="loading-container">Loading rooms...</div>
-                                            ) : rooms.length === 0 ? (
-                                                <p className="text-error">No available rooms in this hall right now.</p>
-                                            ) : (() => {
-                                                // Group rooms by block letter (first character of room_number)
-                                                const blocks = {};
-                                                rooms.forEach((room) => {
-                                                    const blockLetter = room.room_number.charAt(0).toUpperCase();
-                                                    if (!blocks[blockLetter]) blocks[blockLetter] = [];
-                                                    blocks[blockLetter].push(room);
-                                                });
-                                                const blockKeys = Object.keys(blocks).sort();
-                                                const activeBlock = selectedBlock && blocks[selectedBlock] ? selectedBlock : blockKeys[0];
-
-                                                return (
-                                                    <div>
-                                                        {/* Block tabs */}
-                                                        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-lg)', flexWrap: 'wrap' }}>
-                                                            {blockKeys.map((block) => (
-                                                                <button
-                                                                    key={block}
-                                                                    className={`btn ${activeBlock === block ? 'btn-primary' : 'btn-secondary'}`}
-                                                                    onClick={() => setSelectedBlock(block)}
-                                                                    style={{ minWidth: '80px' }}
-                                                                >
-                                                                    {block} Block
-                                                                    <span style={{ fontSize: 'var(--font-size-xs)', marginLeft: '4px', opacity: 0.7 }}>
-                                                                        ({blocks[block].length})
-                                                                    </span>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-
-                                                        {/* Rooms for the active block */}
-                                                        <div className="grid grid-2" style={{ gap: 'var(--spacing-md)' }}>
-                                                            {blocks[activeBlock].map((room) => (
-                                                                <div
-                                                                    key={room.room_id}
-                                                                    style={{
-                                                                        border: '2px solid var(--color-border)',
-                                                                        borderRadius: 'var(--radius-lg)',
-                                                                        padding: 'var(--spacing-lg)',
-                                                                        display: 'flex',
-                                                                        justifyContent: 'space-between',
-                                                                        alignItems: 'center',
-                                                                        transition: 'all var(--transition-base)',
-                                                                    }}
-                                                                    onMouseEnter={(e) => {
-                                                                        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                                                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    }}
-                                                                    onMouseLeave={(e) => {
-                                                                        e.currentTarget.style.boxShadow = 'none';
-                                                                        e.currentTarget.style.transform = 'translateY(0)';
-                                                                    }}
-                                                                >
-                                                                    {/* Room info */}
-                                                                    <div>
-                                                                        <h3 className="font-bold" style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--spacing-xs)' }}>
-                                                                            Room {room.room_number}
-                                                                        </h3>
-                                                                        <p className="text-secondary" style={{ fontSize: 'var(--font-size-sm)', marginBottom: '0' }}>
-                                                                            {room.current_occupants}/{room.capacity} beds taken
-                                                                        </p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <button onClick={() => { setSelectedHall(null); setRooms([]); setSelectedBlock(null); }} className="bg-white border border-slate-200 rounded-lg px-4 py-2 text-xs font-semibold text-slate-900 cursor-pointer flex items-center gap-1.5 hover:bg-slate-50 transition-colors">← Back to Halls</button>
+                                            <h2 className="text-xl font-extrabold text-[#1e3a6e] tracking-tight">{selectedHall.hall_name} — Pick a Room</h2>
+                                        </div>
+                                        {roomsLoading ? (
+                                            <div className="text-center py-12">
+                                                <div className="w-8 h-8 border-4 border-[#1e3a6e] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                                                <p className="text-sm text-slate-500">Loading rooms...</p>
+                                            </div>
+                                        ) : rooms.length === 0 ? (
+                                            <div className="bg-red-50 border border-red-200 rounded-xl px-6 py-4 text-red-600 text-sm">No available rooms in this hall right now.</div>
+                                        ) : (() => {
+                                            const blocks = {};
+                                            rooms.forEach((room) => { const bl = room.room_number.charAt(0).toUpperCase(); if (!blocks[bl]) blocks[bl] = []; blocks[bl].push(room); });
+                                            const blockKeys = Object.keys(blocks).sort();
+                                            const activeBlock = selectedBlock && blocks[selectedBlock] ? selectedBlock : blockKeys[0];
+                                            return (
+                                                <div>
+                                                    <div className="flex gap-2 mb-6 flex-wrap">
+                                                        {blockKeys.map((block) => (
+                                                            <button key={block} onClick={() => setSelectedBlock(block)} className={`px-4 py-2.5 rounded-lg text-xs font-semibold tracking-wide border transition-all duration-200 cursor-pointer min-w-[80px] ${activeBlock === block ? "bg-[#1e3a6e] text-white border-[#1e3a6e]" : "bg-white text-slate-500 border-slate-200 hover:border-[#1e3a6e] hover:text-[#1e3a6e]"}`}>
+                                                                {block} Block <span className="text-[10px] ml-1 opacity-70">({blocks[block].length})</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+                                                        {blocks[activeBlock].map((room) => {
+                                                            const full = room.current_occupants >= room.capacity;
+                                                            return (
+                                                                <div key={room.room_id} className={`bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-[18px] transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${full ? "opacity-50" : ""}`}>
+                                                                    <div className="flex justify-between items-start mb-2.5">
+                                                                        <div className="text-base font-bold text-slate-900">Room {room.room_number}</div>
+                                                                        {full && <span className="inline-flex items-center text-[10px] font-semibold tracking-wider uppercase px-2.5 py-[3px] rounded bg-red-600/[0.08] border border-red-600/[0.25] text-red-600">Full</span>}
                                                                     </div>
-
-                                                                    {/* Book button */}
-                                                                    <button
-                                                                        className="btn btn-primary"
-                                                                        onClick={() => handleBooking(selectedHall.hall_id, room.room_id, room.room_number)}
-                                                                    >
-                                                                        Book
+                                                                    <div className="text-xs text-slate-500 mb-3.5">{room.current_occupants}/{room.capacity} beds taken</div>
+                                                                    <button disabled={full} onClick={() => handleBooking(selectedHall.hall_id, room.room_id, room.room_number)} className={`w-full py-2.5 border-none rounded-lg text-xs font-bold tracking-wide transition-colors duration-200 ${full ? "bg-slate-200 text-slate-500 cursor-not-allowed" : "bg-[#1e3a6e] text-white cursor-pointer hover:bg-[#162d57]"}`}>
+                                                                        {full ? "Full" : "Book"}
                                                                     </button>
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                            );
+                                                        })}
                                                     </div>
-                                                );
-                                            })()}
-                                        </>
-                                    )}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ── TAB: My Room ──────────────────────────────────────────────── */}
+                {activeTab === "myroom" && (
+                    <div>
+                        {!room_details ? (
+                            <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-14 text-center">
+                                <div className="text-[40px] mb-4">🏠</div>
+                                <div className="text-lg font-bold text-slate-900 mb-2">No Room Allocated Yet</div>
+                                <div className="text-sm text-slate-500 leading-relaxed max-w-[380px] mx-auto">
+                                    {profile.payment_status !== "Verified"
+                                        ? "Your payment must be verified before you can request a room."
+                                        : "Head to the \"Available Halls\" tab to select and book a room."}
                                 </div>
-                            )}
-                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {/* Room info card */}
+                                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                    <div className="px-6 py-[18px] border-b border-slate-200 font-bold text-[15px] text-slate-900">Your Room</div>
+                                    <div className="p-6">
+                                        <div className="text-[40px] font-extrabold text-[#1e3a6e] tracking-tight mb-1">Room {room_details.room_number}</div>
+                                        <div className="text-sm text-slate-500 mb-5">{room_details.hall_name}</div>
+                                        {[["Hall", room_details.hall_name], ["Room", room_details.room_number], ["Session", "2025/2026"]].map(([k, v]) => (
+                                            <div key={k} className="flex justify-between py-2.5 border-b border-slate-200 text-[13px]">
+                                                <span className="text-slate-500">{k}</span>
+                                                <span className="text-slate-900 font-medium">{v}</span>
+                                            </div>
+                                        ))}
+                                        <button onClick={() => navigate("/reciept")} className="w-full mt-[18px] py-3 bg-[#1e3a6e] border-none text-white rounded-lg text-xs font-bold cursor-pointer tracking-wider hover:bg-[#162d57] transition-colors">
+                                            View E-Receipt →
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Info / instructions card */}
+                                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                                    <div className="px-6 py-[18px] border-b border-slate-200 font-bold text-[15px] text-slate-900">Instructions</div>
+                                    <div className="p-6">
+                                        <div className="flex flex-col gap-4">
+                                            {[
+                                                { icon: "🪪", label: "Present ID", sub: "Show your student ID at the porter's lodge" },
+                                                { icon: "🧾", label: "Carry Receipt", sub: "Print or show your e-receipt on arrival" },
+                                                { icon: "📦", label: "Move In", sub: "Follow hall guidelines for check-in times" },
+                                                { icon: "📞", label: "Need Help?", sub: "Contact hostel administration for support" },
+                                            ].map((item) => (
+                                                <div key={item.label} className="flex items-start gap-3">
+                                                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-lg shrink-0">{item.icon}</div>
+                                                    <div>
+                                                        <div className="text-[13px] font-semibold text-slate-900">{item.label}</div>
+                                                        <div className="text-[11px] text-slate-500 mt-0.5">{item.sub}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ── TAB: E-Receipt ────────────────────────────────────────────── */}
+                {activeTab === "receipt" && (
+                    <div>
+                        {!room_details ? (
+                            <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-14 text-center">
+                                <div className="text-[40px] mb-4">🧾</div>
+                                <div className="text-lg font-bold text-slate-900 mb-2">No Receipt Yet</div>
+                                <div className="text-sm text-slate-500">Your e-receipt will appear here once a room has been allocated.</div>
+                            </div>
+                        ) : (
+                            <div className="max-w-[480px] mx-auto">
+                                {/* Inline receipt preview */}
+                                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden mb-4">
+                                    {/* Receipt header */}
+                                    <div className="bg-[#1e3a6e] px-7 py-6 text-center relative">
+                                        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
+                                        <div className="relative z-10">
+                                            <div className="text-xl font-extrabold text-white mb-[3px]">HostelMS</div>
+                                            <div className="text-[9px] tracking-widest uppercase text-blue-200">Official Hostel Allocation E-Receipt</div>
+                                            <div className="mt-3 inline-flex items-center gap-1.5 bg-white/[0.12] border border-white/20 rounded-full px-3.5 py-1">
+                                                <span className="w-[5px] h-[5px] rounded-full bg-green-400 inline-block" />
+                                                <span className="text-[9px] text-white tracking-wider font-semibold">VERIFIED & SECURE</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Details */}
+                                    <div className="p-6">
+                                        {[["Name", profile.full_name], ["Matric", profile.matriculation_number], ["Department", profile.department], ["Level", profile.level], ["Hall", room_details.hall_name], ["Room", room_details.room_number], ["Session", "2025/2026"]].map(([k, v]) => (
+                                            <div key={k} className="flex justify-between py-2 border-b border-slate-200 text-[13px]">
+                                                <span className="text-slate-500">{k}</span>
+                                                <span className="text-slate-900 font-medium">{v}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Stamp */}
+                                    <div className="px-6 py-3.5 bg-green-50 border-t border-green-200 flex items-center gap-2.5">
+                                        <span>✅</span>
+                                        <span className="text-[11px] font-bold text-green-600">ALLOCATION CONFIRMED</span>
+                                    </div>
+                                </div>
+                                {/* Actions */}
+                                <div className="flex gap-3">
+                                    <button onClick={() => navigate("/reciept")} className="flex-1 py-3 bg-[#1e3a6e] border-none text-white rounded-lg text-xs font-bold cursor-pointer tracking-wider hover:bg-[#162d57] transition-colors">View Full Receipt →</button>
+                                    <button onClick={() => window.print()} className="flex-1 py-3 bg-transparent border border-slate-200 text-slate-500 rounded-lg text-xs cursor-pointer hover:bg-slate-50 transition-colors">↓ Download PDF</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
+
+            {/* ── Animations ─────────────────────────────────────────────────── */}
+            <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(20px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
         </div>
     );
 }
 
 // Export this component so it can be used in App.jsx
-export default StudentDashboard
+export default StudentDashboard;
