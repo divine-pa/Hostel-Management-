@@ -136,7 +136,11 @@ export default function AdminLayout() {
     useEffect(() => {
         const fetchGraphData = async () => {
             try {
-                const graphData = await allocationGraph();
+                // Get admin email from browser storage to filter graph by hall
+                const userString = localStorage.getItem("Admin");
+                if (!userString) return;
+                const admin = JSON.parse(userString);
+                const graphData = await allocationGraph(admin.email);
                 setChartData(graphData);
             } catch (graphError) {
                 console.error("Graph data fetch error:", graphError);

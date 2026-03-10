@@ -192,10 +192,15 @@ export const RecipetData = async (matriculation_number) => {
     }
 }
 
-//allocation graph
-export const allocationGraph = async () => {
+// ==================================================
+// ALLOCATION GRAPH - Fetches allocation trend data for admin's hall
+// ==================================================
+// Parameter: email (admin's email to filter data by their hall)
+export const allocationGraph = async (email) => {
     try {
-        const response = await axios.get(API_URL + 'allocation-graph/');
+        const response = await axios.get(API_URL + 'allocation-graph/', {
+            params: { email }
+        });
         return response.data;
     } catch (error) {
         throw error;

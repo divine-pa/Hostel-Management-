@@ -543,15 +543,40 @@ def toggle_maintenance(request, room_id):
 
 
 
-#allocation graph
+# ==================================================
+# ALLOCATION GRAPH - Returns allocation trend data for admin's hall
+# ==================================================
+# This returns daily allocation counts filtered by the logged-in admin's hall
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def allocation_graph(request):
+   # Step 1: Get the admin's email from the request
+   admin_email = request.query_params.get("email")
+   if not admin_email:
+       return Response({"error": "Admin email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+   try:
+       # Step 2: Find the admin and their hall
+       admin = Admin.objects.get(email=admin_email)
+   except Admin.DoesNotExist:
+       return Response({"error": "Admin not found"}, status=status.HTTP_404_NOT_FOUND)
+
+   if not admin.hall:
+       return Response({"error": "Admin is not assigned to any hall"}, status=status.HTTP_400_BAD_REQUEST)
+
+   # Step 3: Get allocation data filtered by admin's hall
    data = (
-    Allocation.objects.filter(allocation_date__isnull=False).annotate(day=TruncDay('allocation_date')).values('day').annotate(count=Count('allocation_id')).order_by('day')
+    Allocation.objects.filter(
+        allocation_date__isnull=False,
+        room__hall=admin.hall  # Only allocations for this admin's hall
+    )
+    .annotate(day=TruncDay('allocation_date'))
+    .values('day')
+    .annotate(count=Count('allocation_id'))
+    .order_by('day')
    )
 
-   # Formatting for the frontend (e.g., {"day": "Feb 10", "count": 15}
-
+   # Step 4: Format for the frontend (e.g., {"day": "Feb 10", "count": 15})
    chart_data = [
     {"day": item['day'].strftime('%b %d'), "count": item['count']} for item in data
    ]
