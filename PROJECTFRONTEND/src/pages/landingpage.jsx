@@ -74,8 +74,8 @@ export default function LandingPage() {
             <span style={{ fontWeight: 700, fontSize: 18, color: "#fff", letterSpacing: "-0.01em" }}>HostelMS</span>
           </div>
 
-          {/* Navigation links (scroll to sections) */}
-          <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          {/* Navigation links (scroll to sections) — hidden on mobile */}
+          <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="landing-nav-links">
             {[["#how-it-works", "How It Works"], ["#features", "Features"], ["#stats", "System Stats"]].map(([href, lbl]) => (
               <a key={href} href={href} style={{ color: "#bfdbfe", fontSize: 12, fontWeight: 500, textDecoration: "none", letterSpacing: "0.02em" }}
                 onMouseEnter={e => e.target.style.color = "#fff"}
@@ -161,7 +161,7 @@ export default function LandingPage() {
           </p>
 
           {/* 4 step cards in a grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 32 }}>
             {STEPS.map((s) => (
               <div key={s.step} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "0 12px" }}>
                 <div style={{ position: "relative", marginBottom: 24 }}>
@@ -192,7 +192,7 @@ export default function LandingPage() {
           </div>
 
           {/* Feature cards grid (3 columns) */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
             {FEATURES.map((f) => (
               <div key={f.title}
                 style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 16, padding: 28, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", cursor: "default", transition: "all 0.2s" }}
@@ -212,7 +212,7 @@ export default function LandingPage() {
           Shows key system numbers in a grid */}
       <section id="stats" style={{ background: NAVY, padding: "72px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", ...GRID }} />
-        <div style={{ position: "relative", zIndex: 1, maxWidth: 1152, margin: "0 auto", padding: "0 32px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 32 }}>
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 1152, margin: "0 auto", padding: "0 32px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 32 }}>
           {STATS.map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 48, fontWeight: 800, color: "#fff", lineHeight: 1, marginBottom: 8, letterSpacing: "-0.02em" }}>{s.value}</div>
@@ -233,7 +233,7 @@ export default function LandingPage() {
           </div>
           <h2 style={{ fontSize: 34, fontWeight: 800, color: "#0f172a", marginBottom: 56, letterSpacing: "-0.01em" }}>One system, two experiences</h2>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
 
             {/* Student Portal card (light background) */}
             <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 20, padding: 40, transition: "all 0.2s" }}

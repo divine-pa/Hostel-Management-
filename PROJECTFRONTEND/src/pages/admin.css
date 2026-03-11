@@ -749,7 +749,56 @@
 }
 
 /* ═════════════════════════════════════════════════════════════
-   RESPONSIVE
+   TABLE SCROLL WRAPPER (for horizontal scroll on small screens)
+   ═════════════════════════════════════════════════════════════ */
+.admin-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   HAMBURGER BUTTON (visible on mobile/tablet only)
+   ═════════════════════════════════════════════════════════════ */
+.admin-hamburger {
+  display: none;  /* Hidden on desktop */
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+  background: var(--admin-navy);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(30,58,110,0.3);
+  transition: background 0.15s;
+}
+
+.admin-hamburger:hover {
+  background: var(--admin-navy-dk);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   SIDEBAR OVERLAY (dark backdrop on mobile when sidebar is open)
+   ═════════════════════════════════════════════════════════════ */
+.admin-sidebar-overlay {
+  display: none;  /* Hidden on desktop */
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE CONTENT WRAPPER (for inline-style padding overrides)
+   ═════════════════════════════════════════════════════════════ */
+.admin-content-padded {
+  padding: 0 32px 32px;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET & BELOW (< 900px)
    ═════════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .admin-kpi-grid {
@@ -762,16 +811,145 @@
   }
 }
 
-@media (max-width: 700px) {
-  .admin-sidebar {
-    width: 60px;
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE/TABLET (< 768px) — Hamburger Sidebar
+   ═════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Show hamburger button */
+  .admin-hamburger {
+    display: flex;
   }
 
-  .admin-nav-item span:not(.admin-nav-icon) {
-    display: none;
+  /* Hide sidebar off-screen by default on mobile */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1050;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 240px;
+  }
+
+  /* Slide sidebar IN when open */
+  .admin-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Dark overlay behind sidebar */
+  .admin-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 1040;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .admin-sidebar-overlay.overlay-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Add top padding to page header for hamburger button clearance */
+  .admin-page-header {
+    padding: 18px 16px 18px 64px;
+  }
+
+  .admin-page-title {
+    font-size: 18px;
   }
 
   .admin-page-content {
     padding: 16px;
+  }
+
+  .admin-filter-bar {
+    padding: 12px 16px;
+  }
+
+  .admin-banner {
+    margin: 12px 16px 0;
+  }
+
+  .admin-tabs {
+    padding: 0 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tab {
+    padding: 10px 14px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .admin-content-padded {
+    padding: 0 16px 16px;
+  }
+
+  .admin-kpi-grid {
+    margin-bottom: 16px;
+  }
+
+  .admin-kpi {
+    padding: 14px 16px;
+  }
+
+  .admin-kpi-value {
+    font-size: 26px;
+  }
+
+  .admin-card-header {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .admin-card-body {
+    padding: 14px 16px;
+  }
+
+  .admin-modal {
+    padding: 24px 20px;
+    margin: 16px;
+    width: calc(100vw - 32px) !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RESPONSIVE — SMALL MOBILE (< 480px)
+   ═════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .admin-page-title {
+    font-size: 16px;
+  }
+
+  .admin-page-sub {
+    font-size: 11px;
+  }
+
+  .admin-kpi-value {
+    font-size: 22px;
+  }
+
+  .admin-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-toast {
+    left: 16px;
+    right: 16px;
+    max-width: none;
   }
 }

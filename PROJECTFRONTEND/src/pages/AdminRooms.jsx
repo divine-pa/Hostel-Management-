@@ -150,7 +150,7 @@ export default function AdminRooms() {
             </div>
 
             {/* ── Room Stats Cards ── */}
-            <div className="admin-kpi-grid" style={{ padding: "20px 32px 0" }}>
+            <div className="admin-kpi-grid admin-content-padded" style={{ paddingBottom: 0, paddingTop: 20 }}>
                 {[
                     { label: "Total Rooms", val: stats.total, color: "var(--admin-navy)" },
                     { label: "Available", val: stats.avail, color: "var(--admin-green)" },
@@ -171,7 +171,7 @@ export default function AdminRooms() {
                     onChange={handleSearch}
                     placeholder="Search room or student..."
                     className="admin-input"
-                    style={{ width: 220 }}
+                    style={{ maxWidth: 280, flex: 1 }}
                 />
                 {/* Filter buttons: clicking one highlights it and filters the table */}
                 {["All", "Available", "Full", "Maintenance"].map(f => (
@@ -187,8 +187,9 @@ export default function AdminRooms() {
             </div>
 
             {/* ── Room Table ── */}
-            <div style={{ flex: 1, overflow: "auto", padding: "0 32px 32px" }}>
+            <div className="admin-content-padded" style={{ flex: 1, overflow: "auto" }}>
                 <div className="admin-card">
+                    <div className="admin-table-scroll">
                     <table className="admin-table">
                         <thead>
                             <tr>
@@ -263,6 +264,7 @@ export default function AdminRooms() {
                             })}
                         </tbody>
                     </table>
+                    </div>
 
                     {/* Show message if no rooms match the current filters */}
                     {displayRooms.length === 0 && (
@@ -276,7 +278,7 @@ export default function AdminRooms() {
                 It shows room info, occupancy, maintenance controls, and occupant list. */}
             {selectedRoom && (
                 <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedRoom(null); }}>
-                    <div className="admin-modal" style={{ width: 500 }}>
+                    <div className="admin-modal" style={{ width: "100%", maxWidth: 500 }}>
 
                         {/* Modal header with room number and close button */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
@@ -292,7 +294,7 @@ export default function AdminRooms() {
                         </div>
 
                         {/* Room stats (3 small cards) */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 22 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 14, marginBottom: 22 }}>
                             {[
                                 ["Capacity", `${selectedRoom.capacity} beds`, "var(--admin-border)"],
                                 ["Occupied", `${selectedRoom.current_occupants}`, "var(--admin-blue)"],
@@ -313,7 +315,7 @@ export default function AdminRooms() {
                         {/* Maintenance toggle section */}
                         {selectedRoom.is_under_maintenance ? (
                             // Room IS under maintenance: show warning + "Mark Available" button
-                            <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 8, padding: "12px 16px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 8, padding: "12px 16px", marginBottom: 16, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                                 <div>
                                     <div style={{ fontSize: 12, fontWeight: 600, color: "var(--admin-orange)", marginBottom: 2 }}>⚠ Under Maintenance</div>
                                     <div style={{ fontSize: 11, color: "var(--admin-muted)" }}>This room is hidden from students.</div>

@@ -189,22 +189,22 @@ function StudentDashboard() {
                     }}
                 />
                 {/* Left: logo */}
-                <div className="relative z-10 flex items-center gap-3">
+                <div className="relative z-10 flex items-center gap-2 sm:gap-3">
                     <div className="w-8 h-8 rounded-lg bg-white/[0.18] border border-white/[0.22] flex items-center justify-center">
                         🏠
                     </div>
-                    <span className="text-white font-bold text-lg tracking-tight">
+                    <span className="text-white font-bold text-base sm:text-lg tracking-tight">
                         HostelMS
                     </span>
-                    <span className="text-[9px] font-semibold tracking-widest uppercase px-2.5 py-[3px] rounded bg-white/[0.12] border border-white/[0.18] text-blue-100">
+                    <span className="hidden sm:inline-flex text-[9px] font-semibold tracking-widest uppercase px-2.5 py-[3px] rounded bg-white/[0.12] border border-white/[0.18] text-blue-100">
                         Student Portal
                     </span>
                 </div>
                 {/* Right: payment badge + avatar/logout */}
-                <div className="relative z-10 flex items-center gap-3.5">
+                <div className="relative z-10 flex items-center gap-2 sm:gap-3.5">
                     {/* Payment badge */}
                     <div
-                        className={`flex items-center gap-1.5 px-3 py-[5px] rounded-md border ${profile.payment_status === "Verified"
+                        className={`flex items-center gap-1.5 px-1.5 sm:px-3 py-[5px] rounded-md border ${profile.payment_status === "Verified"
                             ? "bg-green-400/[0.15] border-green-400/[0.35]"
                             : "bg-red-400/[0.15] border-red-400/[0.35]"
                             }`}
@@ -216,7 +216,7 @@ function StudentDashboard() {
                                 }`}
                         />
                         <span
-                            className={`text-[10px] font-semibold tracking-wider ${profile.payment_status === "Verified"
+                            className={`hidden sm:inline text-[10px] font-semibold tracking-wider ${profile.payment_status === "Verified"
                                 ? "text-green-400"
                                 : "text-red-400"
                                 }`}
@@ -242,22 +242,22 @@ function StudentDashboard() {
             </nav>
 
             {/* ── Main content ─────────────────────────────────────────────────── */}
-            <div className="px-6 md:px-9 py-8 max-w-[1100px] mx-auto">
+            <div className="px-4 sm:px-6 md:px-9 py-6 sm:py-8 max-w-[1100px] mx-auto">
                 {/* ── Profile card ─────────────────────────────────────────────────── */}
-                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 md:p-7 flex flex-col md:flex-row justify-between items-start md:items-center mb-7 gap-4">
+                <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 sm:p-6 md:p-7 flex flex-col md:flex-row justify-between items-start md:items-center mb-5 sm:mb-7 gap-4">
                     {/* Left: avatar + info */}
-                    <div className="flex items-center gap-4">
-                        <div className="w-[52px] h-[52px] rounded-full bg-blue-50 border-2 border-blue-400 flex items-center justify-center text-[22px]">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-[52px] sm:h-[52px] rounded-full bg-blue-50 border-2 border-blue-400 flex items-center justify-center text-lg sm:text-[22px] shrink-0">
                             👨
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <div className="text-[10px] text-slate-500 tracking-widest uppercase font-semibold mb-1">
                                 Student
                             </div>
-                            <div className="text-[22px] font-extrabold text-slate-900 tracking-tight mb-[3px]">
+                            <div className="text-lg sm:text-[22px] font-extrabold text-slate-900 tracking-tight mb-[3px] truncate">
                                 {profile.full_name}
                             </div>
-                            <div className="text-xs text-slate-500">
+                            <div className="text-[11px] sm:text-xs text-slate-500">
                                 {profile.matriculation_number} · {profile.department} ·{" "}
                                 {profile.level}
                             </div>
@@ -388,7 +388,7 @@ function StudentDashboard() {
                                                             </button>
                                                         ))}
                                                     </div>
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
                                                         {blocks[activeBlock].map((room) => {
                                                             const full = room.current_occupants >= room.capacity;
                                                             return (
@@ -469,7 +469,8 @@ function StudentDashboard() {
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="text-[13px] font-semibold text-slate-900 truncate">{mate.full_name}</div>
-                                                            <div className="text-[11px] text-slate-500 mt-0.5">Level {mate.level}</div>
+                                                            <div className="text-[11px] text-slate-500 mt-0.5"> {mate.level} Level</div>
+                                                            <div className="text-[11px] text-slate-500 mt-0.5"> {mate.matriculation_number}</div>
                                                         </div>
                                                     </div>
                                                 ))}

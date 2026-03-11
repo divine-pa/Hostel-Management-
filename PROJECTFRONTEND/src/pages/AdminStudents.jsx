@@ -119,7 +119,7 @@ export default function AdminStudents() {
                 {tab === "live" && (
                     <>
                         {/* Student Stats Cards */}
-                        <div className="admin-kpi-grid" style={{ padding: "20px 32px 0" }}>
+                        <div className="admin-kpi-grid admin-content-padded" style={{ paddingBottom: 0, paddingTop: 20 }}>
                             {[
                                 { label: "Total Students", val: allStudents.length, color: "var(--admin-navy)" },
                                 { label: "Rooms with Students", val: roomsList.filter(r => r.current_occupants > 0).length, color: "var(--admin-blue)" },
@@ -139,14 +139,15 @@ export default function AdminStudents() {
                                 onChange={e => setSearchTerm(e.target.value)}
                                 placeholder="Search name, matric, department, or room..."
                                 className="admin-input"
-                                style={{ width: 300 }}
+                                style={{ maxWidth: 360, flex: 1 }}
                             />
                         </div>
 
                         {/* Student Table */}
-                        <div style={{ padding: "0 32px 32px" }}>
+                        <div className="admin-content-padded">
                             <div className="admin-card">
                                 {filteredStudents.length > 0 ? (
+                                    <div className="admin-table-scroll">
                                     <table className="admin-table">
                                         <thead>
                                             <tr>
@@ -178,6 +179,7 @@ export default function AdminStudents() {
                                             ))}
                                         </tbody>
                                     </table>
+                                    </div>
                                 ) : (
                                     <div className="admin-empty">
                                         {searchTerm ? "No students match your search." : "No students allocated yet."}
@@ -192,7 +194,7 @@ export default function AdminStudents() {
                     This replaces the old persistent.jsx standalone page.
                     Shows room data saved in the browser's localStorage. */}
                 {tab === "offline" && (
-                    <div style={{ padding: 32 }}>
+                    <div style={{ padding: 16 }}>
                         <div className="admin-card" style={{ marginBottom: 20 }}>
                             <div className="admin-card-header">
                                 Offline Room Data
@@ -209,7 +211,7 @@ export default function AdminStudents() {
                                         {offlineRoomsWithOccupants.map(room => (
                                             <div key={room.room_number} className="admin-card" style={{ padding: "16px 20px", borderLeft: "3px solid var(--admin-blue)" }}>
                                                 {/* Room info header */}
-                                                <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
                                                     <div style={{ background: "#EFF6FF", color: "var(--admin-blue)", fontWeight: 700, fontSize: 14, padding: "8px 14px", borderRadius: 6 }}>
                                                         {room.room_number}
                                                     </div>
@@ -227,11 +229,11 @@ export default function AdminStudents() {
                                                     Residents
                                                 </div>
                                                 {room.occupants_list.map(student => (
-                                                    <div key={student.matric_number} style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 8px", borderRadius: 6, fontSize: 12 }}>
-                                                        <span style={{ fontWeight: 600, color: "var(--admin-text)", minWidth: 140 }}>{student.full_name}</span>
-                                                        <span style={{ color: "var(--admin-muted)" }}>{student.matric_number}</span>
-                                                        <span style={{ color: "var(--admin-muted)" }}>{student.department}</span>
-                                                        <span style={{ color: "var(--admin-muted)" }}>Lvl {student.level}</span>
+                                                    <div key={student.matric_number} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 6, fontSize: 12, borderBottom: "1px solid var(--admin-border)" }}>
+                                                        <span style={{ fontWeight: 600, color: "var(--admin-text)" }}>{student.full_name}</span>
+                                                        <span style={{ color: "var(--admin-muted)", fontSize: 11 }}>{student.matric_number}</span>
+                                                        <span style={{ color: "var(--admin-muted)", fontSize: 11 }}>{student.department}</span>
+                                                        <span style={{ color: "var(--admin-muted)", fontSize: 11 }}>Lvl {student.level}</span>
                                                     </div>
                                                 ))}
                                             </div>

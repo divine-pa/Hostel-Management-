@@ -339,7 +339,7 @@ export default function AdminReports() {
                                     value={receiptSearch}
                                     onChange={handleReceiptSearch}
                                     className="admin-input"
-                                    style={{ width: 400, marginBottom: 20 }}
+                                    style={{ maxWidth: 400, marginBottom: 20 }}
                                 />
 
                                 {filteredReceipts.length === 0 ? (

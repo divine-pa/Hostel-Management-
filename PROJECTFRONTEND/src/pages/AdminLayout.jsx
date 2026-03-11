@@ -50,6 +50,9 @@ export default function AdminLayout() {
     // toast: the message shown in the green popup notification (null = hidden)
     const [toast, setToast] = useState(null);
 
+    // sidebarOpen: controls the mobile sidebar visibility (hamburger menu)
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
     // rooms: room data saved in browser storage so it works offline too
     // This reads from localStorage on first load (same as original admindashboard.jsx)
     const [rooms, setRooms] = useState(() => {
@@ -110,6 +113,12 @@ export default function AdminLayout() {
     useEffect(() => {
         fetchDashboardData();
     }, [navigate]);
+
+    // ===== CLOSE SIDEBAR ON NAVIGATION =====
+    // Whenever the URL changes, close the mobile sidebar
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location.pathname]);
 
     // ===== SAVE ROOM DATA TO BROWSER STORAGE =====
     // Whenever rooms change, save them to localStorage
@@ -202,10 +211,25 @@ export default function AdminLayout() {
                 </div>
             )}
 
+            {/* ── Hamburger Button (visible only on mobile/tablet via CSS) ── */}
+            <button
+                className="admin-hamburger"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label="Toggle sidebar"
+            >
+                {sidebarOpen ? "✕" : "☰"}
+            </button>
+
+            {/* ── Dark Overlay behind sidebar on mobile ── */}
+            <div
+                className={`admin-sidebar-overlay ${sidebarOpen ? "overlay-visible" : ""}`}
+                onClick={() => setSidebarOpen(false)}
+            />
+
             {/* ══════════════════════════════════════════════════════
                 SIDEBAR — The navy blue panel on the left
                ══════════════════════════════════════════════════════ */}
-            <div className="admin-sidebar">
+            <div className={`admin-sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
                 {/* Decorative background patterns */}
                 <div className="admin-sidebar-grid" />
                 <div className="admin-sidebar-glow" />
