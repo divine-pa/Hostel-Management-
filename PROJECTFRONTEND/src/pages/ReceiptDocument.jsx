@@ -263,8 +263,8 @@ const ReceiptDocument = ({ data }) => (
                     ["Level", data.level],
                     ["Gender", data.gender],
                     ["Email", data.email],
-                    ["Phone", data.phone_number],
-                    ["Address", data.house_address],
+                   
+                   
                 ].map(([label, value]) => (
                     <View key={label} style={styles.row}>
                         <Text style={styles.rowLabel}>{label}</Text>

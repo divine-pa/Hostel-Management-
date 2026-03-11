@@ -75,7 +75,7 @@ function App() {
           <Route path="rooms" element={<AdminRooms />} />
           <Route path="students" element={<AdminStudents />} />
           <Route path="reports" element={<AdminReports />} />
-          <Route path="settings" element={<AdminSettings />} />
+         {/* <Route path="settings" element={<AdminSettings />} />*/}
         </Route>
 
         {/* ===== BACKWARD COMPATIBILITY REDIRECTS =====

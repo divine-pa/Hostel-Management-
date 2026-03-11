@@ -217,10 +217,14 @@ def student_dashboard(request):
         
         # If they ALREADY HAVE a room, show them their room details
         elif student.room:
-            response_data["room_details"] = {
-                "hall_name": student.hall_selected.hall_name,
-                "room_number": student.room.room_number,
-            }
+            # Get all students living in the same room (roommates)
+            roommates = list(
+                Student.objects.filter(room=student.room)
+                .values("full_name", "level")
+            )
+            # Inject roommates into the profile's room_details (from the serializer)
+            if profile_data.get("room_details"):
+                profile_data["room_details"]["roommates"] = roommates
         
         # Step 7: Send back all the information
         return Response(response_data)

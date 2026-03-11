@@ -1,5 +1,5 @@
 // ==================================================
-// ADMINRECEIPTS.JSX — Standalone Admin Receipts Page (Legacy)
+// ADMIN RECEIPTS.JSX — Standalone Admin Receipts Page (Legacy)
 // ==================================================
 // ⚠ NOTE: This page's functionality has been INTEGRATED into AdminReports.jsx
 //   (specifically in the "Receipts" tab). This file is kept for backward

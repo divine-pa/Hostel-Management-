@@ -49,6 +49,8 @@ function StudentDashboard() {
     const [roomsLoading, setRoomsLoading] = useState(false);
     const [selectedBlock, setSelectedBlock] = useState(null);
     const [toast, setToast] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [pendingBooking, setPendingBooking] = useState(null);
     const [activeTab, setActiveTab] = useState("halls");
     const navigate = useNavigate();
 
@@ -136,14 +138,17 @@ function StudentDashboard() {
     };
 
     // ===== HANDLE ROOM BOOKING =====
-    const handleBooking = async (hall_id, room_id, roomNumber) => {
-        if (
-            !window.confirm(
-                `Are you sure you want to book Room ${roomNumber} in ${selectedHall.hall_name}?`
-            )
-        ) {
-            return;
-        }
+    // Step 1: When user clicks "Book", store booking details and open the confirm modal
+    const handleBooking = (hall_id, room_id, roomNumber) => {
+        setPendingBooking({ hall_id, room_id, roomNumber });
+        setShowConfirmModal(true);
+    };
+
+    // Step 2: Runs when user clicks "Yes, Book Room" in the modal
+    const executeBooking = async () => {
+        setShowConfirmModal(false);
+        const { hall_id, room_id } = pendingBooking;
+        setPendingBooking(null);
 
         try {
             setLoading(true);
@@ -157,7 +162,7 @@ function StudentDashboard() {
             setDashboardData(updateData);
         } catch (error) {
             console.error(error);
-            alert(error.response?.data?.error || "Failed to book room");
+            triggerToast(error.response?.data?.error || "Failed to book room ❌");
         } finally {
             setLoading(false);
         }
@@ -442,26 +447,36 @@ function StudentDashboard() {
                                         </button>
                                     </div>
                                 </div>
-                                {/* Info / instructions card */}
+                                {/* Room Members card */}
                                 <div className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                                    <div className="px-6 py-[18px] border-b border-slate-200 font-bold text-[15px] text-slate-900">Instructions</div>
+                                    <div className="px-6 py-[18px] border-b border-slate-200 flex items-center justify-between">
+                                        <span className="font-bold text-[15px] text-slate-900">Room Members</span>
+                                        <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                                            {room_details.roommates?.length || 0} Member{(room_details.roommates?.length || 0) !== 1 ? "s" : ""}
+                                        </span>
+                                    </div>
                                     <div className="p-6">
-                                        <div className="flex flex-col gap-4">
-                                            {[
-                                                { icon: "🪪", label: "Present ID", sub: "Show your student ID at the porter's lodge" },
-                                                { icon: "🧾", label: "Carry Receipt", sub: "Print or show your e-receipt on arrival" },
-                                                { icon: "📦", label: "Move In", sub: "Follow hall guidelines for check-in times" },
-                                                { icon: "📞", label: "Need Help?", sub: "Contact hostel administration for support" },
-                                            ].map((item) => (
-                                                <div key={item.label} className="flex items-start gap-3">
-                                                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-lg shrink-0">{item.icon}</div>
-                                                    <div>
-                                                        <div className="text-[13px] font-semibold text-slate-900">{item.label}</div>
-                                                        <div className="text-[11px] text-slate-500 mt-0.5">{item.sub}</div>
+                                        {room_details.roommates && room_details.roommates.length > 0 ? (
+                                            <div className="flex flex-col gap-3.5">
+                                                {room_details.roommates.map((mate, idx) => (
+                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
+                                                        <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-[13px] font-bold text-[#1e3a6e] shrink-0">
+                                                            {mate.full_name
+                                                                .split(" ")
+                                                                .map((n) => n[0])
+                                                                .join("")
+                                                                .slice(0, 2)}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="text-[13px] font-semibold text-slate-900 truncate">{mate.full_name}</div>
+                                                            <div className="text-[11px] text-slate-500 mt-0.5">Level {mate.level}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center text-sm text-slate-400 py-4">No roommates found.</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -519,6 +534,32 @@ function StudentDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* ── Confirm Booking Modal ──────────────────────────────────────── */}
+            {showConfirmModal && pendingBooking && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h3 className="text-lg font-bold mb-4">Confirm Booking</h3>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to book Room {pendingBooking.roomNumber} in {selectedHall.hall_name}?
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => { setShowConfirmModal(false); setPendingBooking(null); }}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeBooking}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                            >
+                                Yes, Book Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Animations ─────────────────────────────────────────────────── */}
             <style>{`

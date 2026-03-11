@@ -175,7 +175,7 @@ export default function AdminLayout() {
         { key: "rooms", path: "/admin/rooms", label: "Rooms", icon: "⊞" },
         { key: "students", path: "/admin/students", label: "Students", icon: "◉" },
         { key: "reports", path: "/admin/reports", label: "Reports", icon: "▦" },
-        { key: "settings", path: "/admin/settings", label: "Settings", icon: "⚙" },
+        
     ];
 
     // Figure out which nav item is currently active based on the URL

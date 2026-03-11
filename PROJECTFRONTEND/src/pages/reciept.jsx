@@ -153,8 +153,7 @@ function ReceiptPage() {
                             ["Level", recieptData.level],
                             ["Gender", recieptData.gender],
                             ["Email", recieptData.email],
-                            ["Phone", recieptData.phone_number],
-                            ["Address", recieptData.house_address],
+                            
                         ].map(([k, v]) => (
                             <div
                                 key={k}
