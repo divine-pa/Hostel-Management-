@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                                     {hallName}
                                 </h3>
                                 {/* Grid of 6 stat boxes */}
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12 }}>
                                     {[
                                         ["Gender", gender],
                                         ["Total Rooms", totalRooms],
@@ -236,6 +236,7 @@ export default function AdminDashboard() {
                 <div className="admin-card">
                     <div className="admin-card-header">Current Room Occupants</div>
                     {recentOccupants.length > 0 ? (
+                        <div className="admin-table-scroll">
                         <table className="admin-table">
                             <thead>
                                 <tr>
@@ -264,6 +265,7 @@ export default function AdminDashboard() {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                     ) : (
                         // If no occupants, show a message
                         <div className="admin-empty">No occupants to display.</div>

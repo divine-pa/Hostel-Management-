@@ -255,3 +255,8 @@ input::placeholder, textarea::placeholder { color: #94a3b8; }
 
 /* ─── Misc ────────────────────────────────────────────────────────────────── */
 .divider { border-bottom: 1px solid #E2E8F0; }
+
+/* ─── Landing Page Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .landing-nav-links { display: none !important; }
+}
