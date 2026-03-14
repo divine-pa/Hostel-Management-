@@ -10,7 +10,7 @@ from .views import get_student,get_admin,get_hall,get_payment,student_login,admi
 
 # List of all the URLs (web addresses) available in our API
 urlpatterns = [
-    # STUDENT ENDPOINTS
+    # STUDENT ENDPOINTS 
     # When someone goes to "api/student/", call the get_student function
     path('student/', get_student), 
     

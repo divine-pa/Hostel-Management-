@@ -352,6 +352,7 @@ function StudentDashboard() {
                                                     <div key={hall.hall_id} className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
                                                         <div className="flex-1">
                                                             <div className="text-base font-bold text-slate-900 mb-[3px]">{hall.hall_name}</div>
+                                                            <div className="text-xs text-slate-500 mb-[20px]">{hall.hall_description}</div>
                                                             <div className="text-xs text-slate-500 mb-2.5">{hall.available_rooms} room{hall.available_rooms !== 1 ? "s" : ""} left</div>
                                                             <OccBar current={0} capacity={hall.available_rooms > 0 ? 1 : 0} />
                                                         </div>

@@ -102,6 +102,11 @@ class Hall(models.Model):
     # updated_at: When this hall's information was last changed
     updated_at = models.DateTimeField(blank=True, null=True)
 
+    level = models.CharField(max_length=255, blank=True, null=True)
+    hall_description = models.TextField(db_column='Hall_DESCRIPTION')  # Field name made lowercase.
+    accomodation_cost = models.CharField(db_column='ACCOMODATION_COST', max_length=200, blank=True, null=True)  # Field name made lowercase.
+
+
     class Meta:
         managed = False
         db_table = 'hall'
