@@ -20,6 +20,7 @@ from django.db import transaction
 from django.db.models.functions import TruncDay
 from .models import Allocation, Room
 from django.utils import timezone
+from django.contrib.auth.hashers import check_password
 from .utils import send_allocation_email, generate_transaction_id, send_receipt_email
 from django.db.models import Sum, Q , F, Count
 from django.utils import timezone
@@ -100,8 +101,8 @@ def student_login(request):
             # Step 2: Try to find a student with this matric number in the database
             student = Student.objects.get(matric_number=matriculation_number)
 
-            # Step 3: Check if the password matches
-            if student.password == password:
+            # Step 3: Check if the password matches (using PBKDF2 hash verification)
+            if check_password(password, student.password):
                 # CORRECT PASSWORD! Let them in
                 
                 # Step 4: Create a special token (like a ticket) for this student
