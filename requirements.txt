@@ -20,6 +20,6 @@ PyMySQL==1.1.1
 # mysqlclient==2.2.7
 
 # PDF Generation (for receipt emails)
-xhtml2pdf==0.2.17
+xhtml2pdf>=0.2.17
 
  
