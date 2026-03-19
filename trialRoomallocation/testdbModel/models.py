@@ -37,7 +37,7 @@ class Admin(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'admin'
 
 
@@ -71,7 +71,7 @@ class Allocation(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'allocation'
         unique_together = (('student', 'status'),)  # One student can't have two active allocations
 
@@ -108,7 +108,7 @@ class Hall(models.Model):
 
 
     class Meta:
-        managed = False
+       
         db_table = 'hall'
 
 
@@ -136,7 +136,7 @@ class Log(models.Model):
     timestamp = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'log'
         ordering = ['-timestamp']
 
@@ -168,7 +168,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'payment'
 
 
@@ -205,7 +205,7 @@ class Receipt(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'receipt'
 
 
@@ -242,7 +242,7 @@ class Room(models.Model):
     is_under_maintenance = models.BooleanField(default=False)
 
     class Meta:
-        managed = False
+       
         db_table = 'room'
         unique_together = (('hall', 'room_number'),)  # Each hall can't have duplicate room numbers
 
@@ -304,5 +304,5 @@ class Student(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+       
         db_table = 'student'
