@@ -7,6 +7,15 @@
 # - It's like a control panel for your database
 
 from django.contrib import admin
+from .models import Student, Room, Hall, Allocation, Payment, Log, Admin
+
+admin.site.register(Student)
+admin.site.register(Room)
+admin.site.register(Hall)
+admin.site.register(Allocation)
+admin.site.register(Payment)
+admin.site.register(Log)
+admin.site.register(Admin)
 
 # Register your models here.
 # To see a model in the admin panel, you need to register it here
