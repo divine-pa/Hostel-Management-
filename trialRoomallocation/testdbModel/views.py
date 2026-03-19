@@ -89,7 +89,7 @@ def get_payment(request):
 # This is like a security guard checking if you can enter
 @api_view(['POST'])  # This responds to POST requests (sending data)
 def student_login(request):
-    # Step 1: Check if the data sent is in the correct format
+    # Check if the data sent is in the correct format
     serializer = LoginSerializer(data=request.data)
     
     if serializer.is_valid():  # If the format is correct
@@ -98,14 +98,14 @@ def student_login(request):
         password = serializer.validated_data['password']
         
         try: 
-            # Step 2: Try to find a student with this matric number in the database
+            #: Try to find a student with this matric number in the database
             student = Student.objects.get(matric_number=matriculation_number)
 
-            # Step 3: Check if the password matches (using PBKDF2 hash verification)
+            # Check if the password matches (using PBKDF2 hash verification)
             if check_password(password, student.password):
                 # CORRECT PASSWORD! Let them in
                 
-                # Step 4: Create a special token (like a ticket) for this student
+                # Create a special token (like a ticket) for this student
                 # This token proves they logged in successfully
                 refresh = RefreshToken()
                 refresh['user_id'] = student.student_id
@@ -115,7 +115,7 @@ def student_login(request):
                 access = refresh.access_token
                 access['matric_number'] = student.matric_number
                 
-                # Step 5: Send back the tokens and student info
+                # Send back the tokens and student info
                 return Response({
                     'refresh': str(refresh),  # Long-term token
                     'access': str(access),  # Short-term token
@@ -140,7 +140,7 @@ def student_login(request):
 # This is like a security guard checking if a manager can enter
 @api_view(['POST'])  # Responds to POST requests
 def admin_login(request):
-    # Step 1: Check if the data sent is in the correct format
+    #  Check if the data sent is in the correct format
     serializer = AdminLoginSerializer(data=request.data)
     
     if serializer.is_valid():
@@ -149,19 +149,19 @@ def admin_login(request):
         password = serializer.validated_data['password']
         
         try:
-            # Step 2: Try to find an admin with this email in the database
+            # Try to find an admin with this email in the database
             admin = Admin.objects.get(email=email)
             
-            # Step 3: Check if the password matches (using PBKDF2 hash verification)
+            # Check if the password matches (using PBKDF2 hash verification)
             if check_password(password, admin.password):
                 # CORRECT PASSWORD! Let them in
                 
-                # Step 4: Create special tokens for this admin
+                # Create special tokens for this admin
                 refresh = RefreshToken()
                 refresh['user_id'] = admin.admin_id
                 refresh['email'] = admin.email
                 
-                # Step 5: Send back the tokens and admin info
+                # Send back the tokens and admin info
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
