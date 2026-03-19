@@ -118,7 +118,7 @@ function StudentDashboard() {
     if (!dashboardData) return null;
 
     // ===== EXTRACT DATA =====
-    const { profile, available_halls } = dashboardData;
+    const { profile, available_halls, recommended_halls } = dashboardData;
     const { room_details } = profile;
 
     // ===== HANDLE SELECTING A HALL =====
@@ -344,21 +344,64 @@ function StudentDashboard() {
                                             <h2 className="text-[22px] font-extrabold text-[#1e3a6e] tracking-tight mb-1">Select a Hall</h2>
                                             <p className="text-[13px] text-slate-500">Choose a hostel hall to view available rooms</p>
                                         </div>
-                                        {available_halls.length === 0 ? (
-                                            <div className="bg-white border border-slate-200 rounded-xl p-14 text-center text-slate-500">No halls are currently available for your gender.</div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                                                {available_halls.map((hall) => (
-                                                    <div key={hall.hall_id} className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
-                                                        <div className="flex-1">
-                                                            <div className="text-base font-bold text-slate-900 mb-[3px]">{hall.hall_name}</div>
-                                                            <div className="text-xs text-slate-500 mb-[20px]">{hall.hall_description}</div>
-                                                            <div className="text-xs text-slate-500 mb-2.5">{hall.available_rooms} room{hall.available_rooms !== 1 ? "s" : ""} left</div>
-                                                            <OccBar current={0} capacity={hall.available_rooms > 0 ? 1 : 0} />
+
+                                        {/* ── RECOMMENDED HALLS (within/at budget — shown FIRST) ─── */}
+                                        {recommended_halls && recommended_halls.length > 0 && (
+                                            <div className="mb-5">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <span className="text-sm font-bold text-green-700">⭐ Recommended For You</span>
+                                                    <span className="text-[10px] font-semibold tracking-wider text-green-600 bg-green-50 border border-green-200 rounded px-2 py-0.5 uppercase">Within Budget</span>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                                    {recommended_halls.map((hall) => (
+                                                        <div key={hall.hall_id} className="bg-white border-2 border-green-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer relative overflow-hidden">
+                                                            <div className="absolute top-0 right-0 bg-green-100 text-green-700 text-[9px] font-bold tracking-wider uppercase px-3 py-1 rounded-bl-lg">Recommended</div>
+                                                            <div className="flex-1">
+                                                                <div className="text-base font-bold text-slate-900 mb-[3px]">{hall.hall_name}</div>
+                                                                <div className="text-xs text-slate-500 mb-1">{hall.hall_description}</div>
+                                                                {hall.accomodation_cost && (
+                                                                    <div className="text-xs font-semibold text-green-600 mb-1">₦{Number(hall.accomodation_cost).toLocaleString() || hall.accomodation_cost}</div>
+                                                                )}
+                                                                <div className="text-xs text-slate-500 mb-2.5">{hall.available_rooms} room{hall.available_rooms !== 1 ? "s" : ""} left</div>
+                                                                <OccBar current={0} capacity={hall.available_rooms > 0 ? 1 : 0} />
+                                                            </div>
+                                                            <button onClick={() => handleSelectHall(hall)} className="bg-green-600 text-white border-none rounded-lg px-5 py-2.5 text-[13px] font-bold cursor-pointer shrink-0 tracking-wide hover:bg-green-700 transition-colors">Select</button>
                                                         </div>
-                                                        <button onClick={() => handleSelectHall(hall)} className="bg-[#1e3a6e] text-white border-none rounded-lg px-5 py-2.5 text-[13px] font-bold cursor-pointer shrink-0 tracking-wide hover:bg-[#162d57] transition-colors">Select</button>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* ── DIVIDER LINE between sections ─── */}
+                                        {recommended_halls && recommended_halls.length > 0 && available_halls.length > 0 && (
+                                            <div className="flex items-center gap-3 my-6">
+                                                <div className="flex-1 h-px bg-slate-200" />
+                                                <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">Other Halls</span>
+                                                <div className="flex-1 h-px bg-slate-200" />
+                                            </div>
+                                        )}
+
+                                        {/* ── OTHER HALLS (above budget — shown BELOW) ─── */}
+                                        {available_halls.length === 0 && (!recommended_halls || recommended_halls.length === 0) ? (
+                                            <div className="bg-white border border-slate-200 rounded-xl p-14 text-center text-slate-500">No halls are currently available for your level and gender.</div>
+                                        ) : available_halls.length > 0 && (
+                                            <div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                                    {available_halls.map((hall) => (
+                                                        <div key={hall.hall_id} className="bg-white border border-slate-200 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                                                            <div className="flex-1">
+                                                                <div className="text-base font-bold text-slate-900 mb-[3px]">{hall.hall_name}</div>
+                                                                <div className="text-xs text-slate-500 mb-1">{hall.hall_description}</div>
+                                                                {hall.accomodation_cost && (
+                                                                    <div className="text-xs font-semibold text-green-600 mb-1">₦{Number(hall.accomodation_cost).toLocaleString() || hall.accomodation_cost}</div>
+                                                                )}
+                                                                <div className="text-xs text-slate-500 mb-2.5">{hall.available_rooms} room{hall.available_rooms !== 1 ? "s" : ""} left</div>
+                                                                <OccBar current={0} capacity={hall.available_rooms > 0 ? 1 : 0} />
+                                                            </div>
+                                                            <button onClick={() => handleSelectHall(hall)} className="bg-[#1e3a6e] text-white border-none rounded-lg px-5 py-2.5 text-[13px] font-bold cursor-pointer shrink-0 tracking-wide hover:bg-[#162d57] transition-colors">Select</button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

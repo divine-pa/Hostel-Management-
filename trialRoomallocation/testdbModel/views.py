@@ -152,8 +152,8 @@ def admin_login(request):
             # Step 2: Try to find an admin with this email in the database
             admin = Admin.objects.get(email=email)
             
-            # Step 3: Check if the password matches
-            if admin.password == password:
+            # Step 3: Check if the password matches (using PBKDF2 hash verification)
+            if check_password(password, admin.password):
                 # CORRECT PASSWORD! Let them in
                 
                 # Step 4: Create special tokens for this admin
@@ -181,6 +181,54 @@ def admin_login(request):
 
 
 # ==================================================
+# HELPER: Parse a numeric level from a string like "200", "200lvl", etc.
+# ==================================================
+import re
+
+def _parse_level_number(value):
+    """Extract the first integer from a level string. Returns None if not parseable."""
+    if not value:
+        return None
+    # Remove common suffixes and whitespace
+    nums = re.findall(r'\d+', str(value))
+    return int(nums[0]) if nums else None
+
+
+def _hall_matches_level(hall_level_str, student_level_num):
+    """
+    Check whether a student's numeric level falls within a hall's level range.
+    Hall level formats: '200', '200lvl', '200-300', '200lvl - 300lvl', etc.
+    If the hall has no level set, it is open to all levels → return True.
+    """
+    if not hall_level_str or not student_level_num:
+        return True  # No restriction
+
+    nums = re.findall(r'\d+', str(hall_level_str))
+    if not nums:
+        return True  # Can't parse → show the hall
+
+    if len(nums) == 1:
+        # Single level, e.g. "200" or "200lvl"
+        return int(nums[0]) == student_level_num
+    else:
+        # Range, e.g. "200-300" or "200lvl - 300lvl"
+        low, high = int(nums[0]), int(nums[1])
+        return low <= student_level_num <= high
+
+
+def _parse_cost(cost_str):
+    """Parse an accommodation cost string into a float. Returns 0.0 on failure."""
+    if not cost_str:
+        return 0.0
+    # Remove commas, currency symbols, whitespace
+    cleaned = re.sub(r'[^\d.]', '', str(cost_str))
+    try:
+        return float(cleaned)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+# ==================================================
 # STUDENT DASHBOARD - Shows student their personal info
 # ==================================================
 # This is like opening your personal account page
@@ -204,7 +252,8 @@ def student_dashboard(request):
         # Step 5: Create a response package with their profile
         response_data = {
             "profile": profile_data,
-            "available_halls": []  # Start with an empty list of halls
+            "recommended_halls": [],     # Halls within/at student's budget (shown first)
+            "available_halls": []        # Halls above student's budget (shown below)
         }
         
         # Step 6: Decide what else to show them
@@ -214,7 +263,36 @@ def student_dashboard(request):
         if not student.room and student.payment_status == "Verified":
             # Get halls that match their gender and have empty rooms
             halls = Hall.objects.filter(gender=student.gender, available_rooms__gt=0)
-            response_data["available_halls"] = HallSerializer(halls, many=True).data
+
+            # --- LEVEL FILTER ---
+            student_level_num = _parse_level_number(student.level)
+            level_matched_halls = [
+                h for h in halls
+                if _hall_matches_level(h.level, student_level_num)
+            ]
+
+            # --- COST FILTER ---
+            # Get how much the student paid
+            amount_paid = 0.0
+            try:
+                payment_record = Payment.objects.get(
+                    matric_number=student, payment_status="Verified"
+                )
+                amount_paid = float(payment_record.amount_paid)
+            except Payment.DoesNotExist:
+                pass
+
+            recommended = []   # Within or at budget
+            other_halls = []   # Above budget
+            for h in level_matched_halls:
+                hall_cost = _parse_cost(h.accomodation_cost)
+                if hall_cost <= amount_paid:
+                    recommended.append(h)
+                else:
+                    other_halls.append(h)
+
+            response_data["recommended_halls"] = HallSerializer(recommended, many=True).data
+            response_data["available_halls"] = HallSerializer(other_halls, many=True).data
         
         # If they ALREADY HAVE a room, show them their room details
         elif student.room:
@@ -279,17 +357,17 @@ def book_room(request):
 
 
        try:
-           # Step 2: Use a "transaction" - this means if anything goes wrong,
+           #  Use a "transaction" - this means if anything goes wrong,
            # we undo ALL the changes (like a safety net)
            with transaction.atomic():
             
-            # Step 3: Lock the student's record so they can't book twice at the same time
+            #  Lock the student's record so they can't book twice at the same time
             # (Like putting a "Reserved" sign while we process their booking)
             student = Student.objects.select_for_update().get(matric_number=matric)
 
-            # Step 4: VALIDATION - Check if the student is allowed to book
+            #  VALIDATION - Check if the student is allowed to book
             
-            # Check 1: Do they already have a room?
+            #  Check 1: Do they already have a room?
             if student.room:
                 return Response({"error": "Student already has a room"}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -297,7 +375,7 @@ def book_room(request):
             if student.payment_status != "Verified":
                 return Response({"error": "Payment not verified"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Step 5: Get the specific room the student selected
+            #  Get the specific room the student selected
             # Lock it for update to prevent race conditions
             try:
                 room = Room.objects.select_for_update().get(
@@ -307,13 +385,13 @@ def book_room(request):
             except Room.DoesNotExist:
                 return Response({"error": "Room not found in this hall"}, status=status.HTTP_404_NOT_FOUND)
             
-            # Step 6: Validate the room is still available
+            #  Validate the room is still available
             if room.current_occupants >= room.capacity:
                 return Response({"error": "This room is already full"}, status=status.HTTP_400_BAD_REQUEST)
             if room.is_under_maintenance:
                 return Response({"error": "This room is under maintenance"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Step 7: EXECUTE THE BOOKING!
+            #  EXECUTE THE BOOKING!
             
             # Add 1 to the number of students in this room
             room.current_occupants += 1

@@ -5,7 +5,7 @@
 // Left  → navy branding panel (features list).
 // Right → role-picker cards that route to /studentlogin or /adminlogin.
 
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"; 
 
 function LoginPage() {
     return (
