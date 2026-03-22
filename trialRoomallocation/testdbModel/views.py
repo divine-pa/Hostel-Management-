@@ -447,24 +447,25 @@ def book_room(request):
 
             # send email to student with PDF receipt attached
             # Wrapped in try/except so email failure doesn't crash the booking
-            if allocation:
-                try:
-                    send_receipt_email(
-                        student_email=student.email,
-                        student_name=student.full_name,
-                        matric_number=student.matric_number,
-                        hall_name=room.hall.hall_name,
-                        room_number=room.room_number,
-                        receipt_no=f"BU-HAMS-{allocation.allocation_id}",
-                        transaction_id=transaction_id,
-                        amount_paid=str(amount),
-                        date=timezone.now().strftime('%B %d, %Y'),
-                        department=student.department or '',
-                        level=student.level or '',
-                        email=student.email,
-                    )
-                except Exception as email_error:
-                    print(f"Receipt email failed (booking still succeeded): {email_error}")
+            # --- EMAIL SENDING COMMENTED OUT ---
+            # if allocation:
+            #     try:
+            #         send_receipt_email(
+            #             student_email=student.email,
+            #             student_name=student.full_name,
+            #             matric_number=student.matric_number,
+            #             hall_name=room.hall.hall_name,
+            #             room_number=room.room_number,
+            #             receipt_no=f"BU-HAMS-{allocation.allocation_id}",
+            #             transaction_id=transaction_id,
+            #             amount_paid=str(amount),
+            #             date=timezone.now().strftime('%B %d, %Y'),
+            #             department=student.department or '',
+            #             level=student.level or '',
+            #             email=student.email,
+            #         )
+            #     except Exception as email_error:
+            #         print(f"Receipt email failed (booking still succeeded): {email_error}")
            
             # Step 8: Send back a success message!
             return Response({
