@@ -37,7 +37,7 @@ class Admin(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-       verbose_name_plural = "Admin"
+      db_table = 'Admin'
        
 
 
@@ -72,7 +72,7 @@ class Allocation(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Allocation"
+        db_table = 'Allocation'
         unique_together = (('student', 'status'),)  # One student can't have two active allocations
 
 
@@ -109,7 +109,7 @@ class Hall(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Halls"
+        db_table = 'Hall'
 
 
 # ==================================================
@@ -137,7 +137,7 @@ class Log(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Logs"
+        db_table = 'Log'
         ordering = ['-timestamp']
 
 
@@ -169,7 +169,7 @@ class Payment(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Payments"
+        db_table = 'Payment'
 
 
 # ==================================================
@@ -206,7 +206,7 @@ class Receipt(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Receipts"
+        db_table = 'Receipt'
 
 
 # ==================================================
@@ -243,7 +243,7 @@ class Room(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Rooms"
+        db_table = 'Room'
         unique_together = (('hall', 'room_number'),)  # Each hall can't have duplicate room numbers
 
 
@@ -305,4 +305,4 @@ class Student(models.Model):
 
     class Meta:
        
-        verbose_name_plural = "Students"
+        db_table = 'Student'
