@@ -1,5 +1,6 @@
 import os
 import requests
+import base64
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 import io, uuid, string, random, secrets
@@ -102,6 +103,21 @@ def send_receipt_email(student_email, student_name, matric_number,
             f"<p>— Babcock University HAMS</p>"
         )
 
+    # Read the PDF and convert it to Base64 for the API
+    attachment_data = []
+
+    # Use the existing generate_receipt_pdf function to get PDF bytes in memory
+    pdf_bytes = generate_receipt_pdf(context)
+
+    if pdf_bytes:
+        encoded_string = base64.b64encode(pdf_bytes).decode("utf-8")
+        attachment_data.append({
+            "content": encoded_string,
+            "name": f"BU_Receipt_{receipt_id}.pdf"
+        })
+    else:
+        print(f"Warning: PDF generation failed for {matric_number}")
+
     # THE BREVO API BYPASS
     api_key = os.environ.get('BREVO_API_KEY')
     url = "https://api.brevo.com/v3/smtp/email"
@@ -123,7 +139,8 @@ def send_receipt_email(student_email, student_name, matric_number,
             {"email": student_email, "name": student_name}
         ],
         "subject": "Room Allocation Receipt - Babcock University",
-        "htmlContent": html_content
+        "htmlContent": html_content,
+        "attachment": attachment_data
     }
 
     try:
