@@ -5,7 +5,7 @@
 # - Students/admins make requests (like "show me my dashboard")
 # - Views get the data from the database
 # - Views send back the response (the data they asked for)
-
+import threading
 from django.shortcuts import render
 
 # Import tools from Django to create API endpoints
@@ -444,34 +444,31 @@ def book_room(request):
                 created_at = timezone.now(),
             )
 
+            # Fire the email in a background thread so it doesn't block the server
+            email_thread = threading.Thread(
+                target=send_receipt_email, 
+                args=(
+                    student.email,
+                    student.full_name,
+                    student.matric_number,
+                    room.hall.hall_name,
+                    room.room_number,
+                    f"BU-HAMS-{allocation.allocation_id}",
+                    transaction_id,
+                    str(amount),
+                    timezone.now().strftime('%B %d, %Y'),
+                    student.department or '',
+                    student.level or '',
+                    student.email,
+                )
+            )
+            email_thread.start() # This starts the background process
 
-            # send email to student with PDF receipt attached
-            # Wrapped in try/except so email failure doesn't crash the booking
-            # --- EMAIL SENDING COMMENTED OUT ---
-            # if allocation:
-            #     try:
-            #         send_receipt_email(
-            #             student_email=student.email,
-            #             student_name=student.full_name,
-            #             matric_number=student.matric_number,
-            #             hall_name=room.hall.hall_name,
-            #             room_number=room.room_number,
-            #             receipt_no=f"BU-HAMS-{allocation.allocation_id}",
-            #             transaction_id=transaction_id,
-            #             amount_paid=str(amount),
-            #             date=timezone.now().strftime('%B %d, %Y'),
-            #             department=student.department or '',
-            #             level=student.level or '',
-            #             email=student.email,
-            #         )
-            #     except Exception as email_error:
-            #         print(f"Receipt email failed (booking still succeeded): {email_error}")
-           
-            # Step 8: Send back a success message!
+            # Send back a success message IMMEDIATELY to React
             return Response({
                 "message": "Room booked successfully",
-                "room number":room.room_number,
-                "hall name":room.hall.hall_name
+                "room number": room.room_number,
+                "hall name": room.hall.hall_name
             }, status=status.HTTP_200_OK)
             
 
