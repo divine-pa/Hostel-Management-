@@ -37,7 +37,7 @@ class Admin(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-      db_table = 'Admin'
+      db_table = 'admin'
        
 
 
@@ -72,7 +72,7 @@ class Allocation(models.Model):
 
     class Meta:
        
-        db_table = 'Allocation'
+        db_table = 'allocation'
         unique_together = (('student', 'status'),)  # One student can't have two active allocations
 
 
@@ -109,7 +109,7 @@ class Hall(models.Model):
 
     class Meta:
        
-        db_table = 'Hall'
+        db_table = 'hall'
 
 
 # ==================================================
@@ -137,7 +137,7 @@ class Log(models.Model):
 
     class Meta:
        
-        db_table = 'Log'
+        db_table = 'log'
         ordering = ['-timestamp']
 
 
@@ -169,7 +169,7 @@ class Payment(models.Model):
 
     class Meta:
        
-        db_table = 'Payment'
+        db_table = 'payment'
 
 
 # ==================================================
@@ -206,7 +206,7 @@ class Receipt(models.Model):
 
     class Meta:
        
-        db_table = 'Receipt'
+        db_table = 'receipt'
 
 
 # ==================================================
@@ -243,7 +243,7 @@ class Room(models.Model):
 
     class Meta:
        
-        db_table = 'Room'
+        db_table = 'room'
         unique_together = (('hall', 'room_number'),)  # Each hall can't have duplicate room numbers
 
 
@@ -305,4 +305,4 @@ class Student(models.Model):
 
     class Meta:
        
-        db_table = 'Student'
+        db_table = 'student'
