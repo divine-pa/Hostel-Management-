@@ -1,3 +1,5 @@
+import os
+import requests
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 import io, uuid, string, random, secrets
@@ -52,18 +54,19 @@ def generate_receipt_pdf(context):
 
 
 # ==================================================
-# SEND RECEIPT EMAIL  (with PDF attachment)
+# SEND RECEIPT EMAIL  (via Brevo API)
 # ==================================================
-# Generates the PDF receipt and emails it as an attachment to the student
+# Renders the receipt HTML template and sends it to the student
+# using the Brevo transactional email API (https://brevo.com).
 # This function should ALWAYS be called inside a try/except block
-# so that email/SMTP failures never crash or rollback the booking
+# so that email/API failures never crash or rollback the booking.
 def send_receipt_email(student_email, student_name, matric_number,
-                       hall_name, room_number, receipt_no,
-                       transaction_id, amount_paid, date,
-                       department='', level='', email=''):
+                       hall_name, room_number, receipt_id,
+                       transaction_id, amount, date,
+                       department='', level='', recipient_email=''):
     """
-    Generate a PDF receipt and send it as an email attachment.
-    If the PDF generation fails, a text-only fallback email is sent instead.
+    Render the receipt HTML template and send it via the Brevo API.
+    If template rendering fails, a simple HTML fallback is sent instead.
     """
     # Build the context dict for the HTML template
     context = {
@@ -71,59 +74,61 @@ def send_receipt_email(student_email, student_name, matric_number,
         'matric_number': matric_number,
         'hall_name': hall_name,
         'room_number': room_number,
-        'receipt_no': receipt_no,
+        'receipt_no': receipt_id,
         'transaction_id': transaction_id,
-        'amount_paid': amount_paid,
+        'amount_paid': amount,
         'date': date,
         'department': department,
         'level': level,
-        'email': email,
+        'email': recipient_email,
     }
 
-    # Generate the PDF
-    pdf_bytes = generate_receipt_pdf(context)
-
-    if not pdf_bytes:
-        # Fallback: send a plain-text email if PDF generation fails
-        print(f"Could not generate PDF for {matric_number}, sending text-only email")
-        send_mail(
-            'Babcock University: Room Allocation Successful',
-            f"Hello {student_name},\n\n"
-            f"Your hall allocation is successful.\n"
-            f"Hall: {hall_name}\nRoom: {room_number}\n"
-            f"Receipt No: {receipt_no}\n\n"
-            f"Please login to the portal to download your e-receipt.",
-            'projecttest531@gmail.com',
-            [student_email],
-            fail_silently=False,
+    # Render the receipt HTML template to use as the email body
+    try:
+        html_content = render_to_string('testdbModel/receipt_template.html', context)
+    except Exception as e:
+        # Fallback: build a simple HTML email if template rendering fails
+        print(f"Template rendering failed for {matric_number}: {e}")
+        html_content = (
+            f"<h2>Room Allocation Receipt</h2>"
+            f"<p>Hello {student_name},</p>"
+            f"<p>Your hall allocation is successful!</p>"
+            f"<p><strong>Hall:</strong> {hall_name}<br>"
+            f"<strong>Room:</strong> {room_number}<br>"
+            f"<strong>Receipt No:</strong> {receipt_id}<br>"
+            f"<strong>Transaction ID:</strong> {transaction_id}<br>"
+            f"<strong>Amount Paid:</strong> {amount}</p>"
+            f"<p>Please login to the portal to download your e-receipt.</p>"
+            f"<p>— Babcock University HAMS</p>"
         )
-        return
 
-    # Build email with PDF attachment using Django's EmailMessage
-    msg = EmailMessage(
-        subject='Babcock University: Room Allocation Receipt',
-        body=(
-            f"Hello {student_name},\n\n"
-            f"Your hall allocation is successful! "
-            f"Please find your official e-receipt attached.\n\n"
-            f"Hall: {hall_name}\n"
-            f"Room: {room_number}\n"
-            f"Receipt No: {receipt_no}\n\n"
-            f"Please present this receipt at the porter's lodge "
-            f"to access your room.\n\n"
-            f"— Babcock University HAMS"
-        ),
-        from_email='projecttest531@gmail.com',
-        to=[student_email],
-    )
+    # THE BREVO API BYPASS
+    api_key = os.environ.get('BREVO_API_KEY')
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    # Attach the PDF file named Receipt_[Matric_Number].pdf
-    msg.attach(
-        filename=f"Receipt_{matric_number}.pdf",
-        content=pdf_bytes,
-        mimetype='application/pdf'
-    )
+    headers = {
+        "accept": "application/json",
+        "api-key": api_key,
+        "content-type": "application/json"
+    }
 
-    msg.send(fail_silently=False)
-    print(f"Receipt email with PDF sent to {student_email}")
+    payload = {
+        # This MUST be the exact email you verified on Brevo
+        "sender": {
+            "name": "Babcock Hostel Allocations",
+            "email": "projecttest531@gmail.com"
+        },
+        # This is dynamic! It will send to whatever email the student signed up with.
+        "to": [
+            {"email": student_email, "name": student_name}
+        ],
+        "subject": "Room Allocation Receipt - Babcock University",
+        "htmlContent": html_content
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"Brevo API Response: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Brevo API failed: {e}")
 
