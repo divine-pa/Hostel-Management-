@@ -244,7 +244,7 @@ class Room(models.Model):
     class Meta:
        
         db_table = 'room'
-        unique_together = (('hall', 'room_number'),)  # Each hall can't have duplicate room numbers
+        unique_together = (('hall', 'room_number'),)  # Each hall can't have duplicate room numberss
 
 
 # ==================================================
